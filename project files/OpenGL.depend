@@ -41,3 +41,17 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
+1624853150 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<iostream>
+	<windows.h>
+	<glut.h>
+	<vector>
+
+1624853150 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\opengl\include\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
