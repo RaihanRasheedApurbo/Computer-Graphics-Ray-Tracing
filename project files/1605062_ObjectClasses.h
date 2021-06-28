@@ -1,6 +1,8 @@
 #include<bits/stdc++.h>
 using namespace std;
 
+
+
 struct point
 {
 	double x,y,z;
@@ -26,6 +28,39 @@ protected:
 
 private:
 };
+
+
+class Sphere:public Object{
+public:
+    Sphere();
+//    Sphere(center, radius);
+    void draw();
+};
+
+class Light{
+public:
+    Vector3D lightPos;
+    double color[3];
+};
+
+
+extern vector <Object> objects;
+extern vector <Light> lights;
+
+
+class Floor: public Object{
+public:
+
+    Floor(double floorWidth, double tileWidth){
+        reference_point={-floorWidth/2,-floorWidth/2,0};
+        length=tileWidth;
+    }
+    void draw(){
+    // write codes for drawing a checkerboard-like
+    // floor with alternate colors on adjacent tiles
+    }
+};
+
 
 Object::Object()
 {
@@ -61,12 +96,7 @@ void Object::setShine()
 
 }
 
-class Sphere:public Object{
-public:
-    Sphere();
-//    Sphere(center, radius);
-    void draw();
-};
+
 
 Sphere::Sphere()
 {
@@ -83,9 +113,8 @@ void Sphere::draw()
     cout<<"drawing Sphere"<<endl;
 }
 
-class Light{
-public:
-    Vector3D lightPos;
-    double color[3];
-};
+
+
+
+
 
