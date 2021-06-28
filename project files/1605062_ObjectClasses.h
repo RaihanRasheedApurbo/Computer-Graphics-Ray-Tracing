@@ -33,14 +33,34 @@ private:
 class Sphere:public Object{
 public:
     Sphere();
+    double radius;
 //    Sphere(center, radius);
     void draw();
+    void input();
+};
+
+class Triangle:public Object{
+public:
+    Triangle();
+//    Sphere(center, radius);
+    void draw();
+    void input();
+};
+
+class Shape:public Object{
+public:
+
+    Shape();
+//    Sphere(center, radius);
+    void draw();
+    void input();
 };
 
 class Light{
 public:
     Vector3D lightPos;
     double color[3];
+    void input();
 };
 
 
@@ -111,6 +131,27 @@ Sphere::Sphere()
 void Sphere::draw()
 {
     cout<<"drawing Sphere"<<endl;
+}
+
+
+void printSphere(Sphere &s)
+{
+    cout<<s.reference_point.x<<" "<<s.reference_point.y<<" "<<s.reference_point.z<<endl;
+    cout<<s.radius;
+    cout<<s.color[0]<<" "<<s.color[1]<<" "<<s.color[2]<<endl;
+    cout<<s.coEfficients[0]<<" "<<s.coEfficients[1]<<" "<<s.coEfficients[2]<<" "<<s.coEfficients[3]<<endl;
+    cout<<s.shine<<endl;
+
+}
+Sphere readSphere(ifstream &inputFile)
+{
+    Sphere ret;
+    inputFile>>ret.reference_point.x>>ret.reference_point.y>>ret.reference_point.z;
+    inputFile>>ret.radius;
+    inputFile>>ret.color[0]>>ret.color[1]>>ret.color[2];
+    inputFile>>ret.coEfficients[0]>>ret.coEfficients[1]>>ret.coEfficients[2]>>ret.coEfficients[3];
+    inputFile>>ret.shine;
+    return ret;
 }
 
 

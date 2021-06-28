@@ -540,15 +540,42 @@ void loadData()
 {
     string file1 = "scene.txt";
     ifstream inputFile(file1);
-    cout<<inputFile.eof()<<endl;
+    int levelOfRecursion = 0;
+    double dimension = 0;
+    int numberOfObject = 0;
 
-    int t1,t2,t3;
-    inputFile>>t1;
-    inputFile>>t2>>t3;
-    cout<<"kill me"<<endl;
-    cout<<t1<<" "<<t2<<" "<<t3<<endl;
-    Object *t = new Sphere;
-    t->draw();
+    inputFile>>levelOfRecursion>>dimension>>numberOfObject;
+    cout<<levelOfRecursion<<" "<<dimension<<" "<<numberOfObject<<endl;
+
+    //after reading the variable numberofObject rest of the blank line
+    // is needed to be parsed before going inside loop and read object
+    // informations. so next two lines do that.
+    string line;
+    getline(inputFile,line);
+
+    for(int i=0;i<numberOfObject;i++)
+    {
+        getline(inputFile,line);
+        cout<<line<<endl;
+        if(line.find("sphere") != std::string::npos)
+        {
+            Sphere s = readSphere(inputFile);
+            printSphere(s);
+            objects.push_back(s);
+        }
+    }
+//    cout<<inputFile.eof()<<endl;
+
+//    int t1,t2,t3;
+//    inputFile>>t1;
+//    inputFile>>t2>>t3;
+//    cout<<"kill me"<<endl;
+//    cout<<t1<<" "<<t2<<" "<<t3<<endl;
+    Sphere t;
+    Object *t1 = &t;
+    t1->draw();
+
+
 
 }
 
