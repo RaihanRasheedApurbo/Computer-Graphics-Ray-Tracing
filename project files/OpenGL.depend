@@ -41,17 +41,33 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
-1624853150 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
+1624890377 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<math.h>
 	<iostream>
 	<windows.h>
 	<glut.h>
-	<vector>
+	<bits/stdc++.h>
+	"1605062_ObjectClasses.h"
 
 1624853150 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\opengl\include\glut.h
 	<windows.h>
 	<GL/gl.h>
 	<GL/glu.h>
+
+1624890025 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\include\1605062_object.h
+
+1624890025 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\src\1605062_object.cpp
+	<1605062_Object.h>
+	<bits/stdc++.h>
+
+1624890025 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\test.cpp
+	<bits/stdc++.h>
+
+1624890025 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\test.cpp
+	<bits/stdc++.h>
+
+1624890525 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_objectclasses.h
+	<bits/stdc++.h>
 

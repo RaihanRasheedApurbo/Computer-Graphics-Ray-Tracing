@@ -4,8 +4,16 @@
 #include <iostream>
 #include <windows.h>
 #include <glut.h>
+#include <bits/stdc++.h>
+//#include<1605062_Object.h>
+#include "1605062_ObjectClasses.h"
 using namespace std;
 #define pi (2*acos(0.0))
+
+
+vector <Object> objects;
+vector <Light> lights;
+
 
 double cameraHeight;
 double cameraAngle;
@@ -18,10 +26,7 @@ double yAmount;
 double zAmount;
 double rotationAmount;
 
-struct point
-{
-	double x,y,z;
-};
+
 
 struct point pos;
 struct point u;
@@ -530,6 +535,23 @@ void init(){
 	//far distance
 }
 
+
+void loadData()
+{
+    string file1 = "scene.txt";
+    ifstream inputFile(file1);
+    cout<<inputFile.eof()<<endl;
+
+    int t1,t2,t3;
+    inputFile>>t1;
+    inputFile>>t2>>t3;
+    cout<<"kill me"<<endl;
+    cout<<t1<<" "<<t2<<" "<<t3<<endl;
+    Object *t = new Sphere;
+    t->draw();
+
+}
+
 int main(int argc, char **argv){
 	glutInit(&argc,argv);
 	glutInitWindowSize(500, 500);
@@ -549,7 +571,7 @@ int main(int argc, char **argv){
 	glutSpecialFunc(specialKeyListener);
 	glutMouseFunc(mouseListener);
 
-
+    loadData();
 
 	glutMainLoop();		//The main loop of OpenGL
 
