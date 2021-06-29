@@ -560,9 +560,38 @@ void loadData()
         if(line.find("sphere") != std::string::npos)
         {
             Sphere s = readSphere(inputFile);
-            printSphere(s);
+            //printSphere(s);
             objects.push_back(s);
         }
+        else if(line.find("triangle") != std::string::npos)
+        {
+            Triangle s = readTriangle(inputFile);
+            //printTriangle(s);
+            objects.push_back(s);
+        }
+        else if(line.find("general") != std::string::npos)
+        {
+            General s = readGeneral(inputFile);
+            //printGeneral(s);
+            objects.push_back(s);
+        }
+        else
+        {
+            cout<<"something wrong"<<endl;
+            break;
+        }
+        // after reading shininess we have two newline
+        getline(inputFile,line);
+        getline(inputFile,line);
+    }
+    int numberOfLightSources = 0;
+    inputFile>>numberOfLightSources;
+    getline(inputFile,line);
+    for(int i=0;i<numberOfLightSources;i++)
+    {
+        Light t = readLight(inputFile);
+        //printLight(t);
+        lights.push_back(t);
     }
 //    cout<<inputFile.eof()<<endl;
 
@@ -571,9 +600,12 @@ void loadData()
 //    inputFile>>t2>>t3;
 //    cout<<"kill me"<<endl;
 //    cout<<t1<<" "<<t2<<" "<<t3<<endl;
+
     Sphere t;
     Object *t1 = &t;
     t1->draw();
+    Floor t2;
+    objects.push_back(t2);
 
 
 
