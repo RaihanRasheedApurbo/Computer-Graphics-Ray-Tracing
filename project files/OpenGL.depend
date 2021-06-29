@@ -41,7 +41,7 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
-1624944069 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
+1624951608 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<math.h>
@@ -68,6 +68,8 @@
 1624890025 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\test.cpp
 	<bits/stdc++.h>
 
-1624944116 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_objectclasses.h
+1624951710 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_objectclasses.h
 	<bits/stdc++.h>
+	<windows.h>
+	<glut.h>
 

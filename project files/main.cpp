@@ -5,14 +5,13 @@
 #include <windows.h>
 #include <glut.h>
 #include <bits/stdc++.h>
-//#include<1605062_Object.h>
 #include "1605062_ObjectClasses.h"
 using namespace std;
 #define pi (2*acos(0.0))
 
 
-vector <Object> objects;
-vector <Light> lights;
+vector <Object*> objects;
+vector <Light*> lights;
 
 
 double cameraHeight;
@@ -463,15 +462,22 @@ void display(){
 	****************************/
 	//add objects
 
-	drawAxes();
+//	drawAxes();
+//	cout<<objects[0]->coEfficients[0]<<endl;
+//	objects[0]->draw();
 //	drawGrid();
 
     //glColor3f(1,0,0);
     //drawSquare(10);
 
     drawSS();
+//    cout<<"hi"<<endl;
+//    cout<<objects.size()<<endl;
+    cout<<objects[0]->color[0]<<endl;
+    objects[0]->draw();
 
-    //drawCircle(30,24);
+//    drawSphere(10,10,10);
+//    drawCircle(30,24);
 
     //drawCone(20,50,24);
 
@@ -559,19 +565,19 @@ void loadData()
         cout<<line<<endl;
         if(line.find("sphere") != std::string::npos)
         {
-            Sphere s = readSphere(inputFile);
+            Sphere *s = readSphere(inputFile);
             //printSphere(s);
             objects.push_back(s);
         }
         else if(line.find("triangle") != std::string::npos)
         {
-            Triangle s = readTriangle(inputFile);
+            Triangle *s = readTriangle(inputFile);
             //printTriangle(s);
             objects.push_back(s);
         }
         else if(line.find("general") != std::string::npos)
         {
-            General s = readGeneral(inputFile);
+            General *s = readGeneral(inputFile);
             //printGeneral(s);
             objects.push_back(s);
         }
@@ -589,7 +595,7 @@ void loadData()
     getline(inputFile,line);
     for(int i=0;i<numberOfLightSources;i++)
     {
-        Light t = readLight(inputFile);
+        Light *t = readLight(inputFile);
         //printLight(t);
         lights.push_back(t);
     }
@@ -600,12 +606,10 @@ void loadData()
 //    inputFile>>t2>>t3;
 //    cout<<"kill me"<<endl;
 //    cout<<t1<<" "<<t2<<" "<<t3<<endl;
-
-    Sphere t;
-    Object *t1 = &t;
-    t1->draw();
-    Floor t2;
-    objects.push_back(t2);
+    cout<<"hi"<<endl;
+    cout<<objects.size()<<endl;
+    drawSphere(5,10,10);
+    cout<<objects[0]->coEfficients[0]<<endl;
 
 
 
@@ -630,9 +634,11 @@ int main(int argc, char **argv){
 	glutSpecialFunc(specialKeyListener);
 	glutMouseFunc(mouseListener);
 
-    loadData();
 
+    loadData();
 	glutMainLoop();		//The main loop of OpenGL
+
+
 
 	return 0;
 }
