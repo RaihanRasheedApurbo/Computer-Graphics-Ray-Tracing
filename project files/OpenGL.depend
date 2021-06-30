@@ -41,7 +41,7 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
-1625025556 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
+1625062819 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<math.h>
@@ -50,6 +50,7 @@
 	<glut.h>
 	<bits/stdc++.h>
 	"1605062_ObjectClasses.h"
+	"bitmap_image.hpp"
 
 1624853150 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\opengl\include\glut.h
 	<windows.h>
@@ -68,8 +69,18 @@
 1624890025 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\test.cpp
 	<bits/stdc++.h>
 
-1625030364 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_objectclasses.h
+1625062376 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_objectclasses.h
 	<bits/stdc++.h>
 	<windows.h>
 	<glut.h>
+
+1625058408 c:\users\sherrinford\desktop\computer graphics ray tracing\project files\bitmap_image.hpp
+	<algorithm>
+	<cmath>
+	<cstdlib>
+	<fstream>
+	<iostream>
+	<iterator>
+	<limits>
+	<string>
 

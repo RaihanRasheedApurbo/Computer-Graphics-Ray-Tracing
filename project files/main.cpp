@@ -6,6 +6,7 @@
 #include <glut.h>
 #include <bits/stdc++.h>
 #include "1605062_ObjectClasses.h"
+#include "bitmap_image.hpp"
 using namespace std;
 #define pi (2*acos(0.0))
 
@@ -447,7 +448,7 @@ void display(){
 	//2. where is the camera looking?
 	//3. Which direction is the camera's UP direction?
 
-	//gluLookAt(100,100,100,	0,0,0,	0,0,1);
+//	gluLookAt(100,100,100,	0,0,0,	0,0,1);
 	//gluLookAt(200*cos(cameraAngle), 200*sin(cameraAngle), cameraHeight,		0,0,0,		0,0,1);
 //	gluLookAt(0,0,200,	0,0,0,	0,1,0);
 	gluLookAt(pos.x,pos.y,pos.z,	pos.x+l.x,pos.y+l.y,pos.z+l.z,	u.x,u.y,u.z);
@@ -502,6 +503,8 @@ void animate(){
 	glutPostRedisplay();
 }
 
+double viewAngle = 80; // in degrees used in init and capture
+
 void init(){
 	//codes for initialization
 //	drawgrid=0;
@@ -539,21 +542,84 @@ void init(){
 	glLoadIdentity();
 
 	//give PERSPECTIVE parameters
-	gluPerspective(80,	1,	1,	1000.0);
+	gluPerspective(viewAngle,	1,	1,	1000.0);
 	//field of view in the Y (vertically)
 	//aspect ratio that determines the field of view in the X direction (horizontally)
 	//near distance
 	//far distance
 }
 
+int levelOfRecursion = 0;
+double dimension = 0;
+int numberOfObject = 0;
+double windowHeight = 500;
+double windowWidth = 500; // used in main and in capture function
+
+void capture()
+{
+    bitmap_image image(dimension,dimension);
+    cout<<tan(pi*viewAngle/180/2)<<" "<<(windowHeight/2.0)<<endl;
+    double planeDistance = (windowHeight/2.0)/tan(pi*viewAngle/180/2);
+    Vector3D topLeft;
+    topLeft.x = pos.x + l.x *planeDistance - r.x*windowWidth/2 + u.x*windowHeight/2;
+    topLeft.y = pos.y + l.y *planeDistance - r.y*windowWidth/2 + u.y*windowHeight/2;
+    topLeft.z = pos.z + l.z *planeDistance - r.z*windowWidth/2 + u.z*windowHeight/2;
+    double du = windowWidth/dimension;
+    double dv = windowHeight/dimension;
+
+    topLeft.x = topLeft.x + r.x * (0.5*du) - u.x * (0.5*dv);
+    topLeft.y = topLeft.y + r.y * (0.5*du) - u.y * (0.5*dv);
+    topLeft.z = topLeft.z + r.z * (0.5*du) - u.z * (0.5*dv);
+    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
+    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
+    cout<<"eye:"<<endl;
+    printPoint(pos);
+    cout<<"look:"<<endl;
+    printPoint(l);
+    cout<<"up:"<<endl;
+    printPoint(u);
+    cout<<"right:"<<endl;
+    printPoint(r);
+    cout<<"topLeft: "<<endl;
+    printPoint(topLeft);
+
+    for(int i=0;i<dimension;i++)
+    {
+        for(int j=0;j<dimension;j++)
+        {
+            Vector3D curPixel;
+            curPixel.x = topLeft.x - i*dv*u.x + j*du*r.x;
+            curPixel.y = topLeft.y - i*dv*u.y + j*du*r.y;
+            curPixel.z = topLeft.z - i*dv*u.z + j*du*r.z;
+
+            Ray r(pos,curPixel);
+            double *color = new double[3];
+//            if(i%256==0 && j%256==0)
+//            {
+//                cout<<i<<" "<<j<<endl;
+//                printPoint(curPixel);
+//            }
+            color[0] = 0;
+            color[1] = 0;
+            color[2] = 255;
+            for(int k=0;k<objects.size();k++)
+            {
+                double t = objects[k]->intersect(r,color,levelOfRecursion);
+                image.set_pixel(i,j,color[0],color[1],color[2]);
+            }
+            delete[] color;
+
+        }
+    }
+    image.save_image("test.bmp");
+
+}
 
 void loadData()
 {
     string file1 = "scene.txt";
     ifstream inputFile(file1);
-    int levelOfRecursion = 0;
-    double dimension = 0;
-    int numberOfObject = 0;
+
 
     inputFile>>levelOfRecursion>>dimension>>numberOfObject;
     cout<<levelOfRecursion<<" "<<dimension<<" "<<numberOfObject<<endl;
@@ -615,14 +681,16 @@ void loadData()
     printTriangle((Triangle *)objects[3]);
     objects.push_back((Object*) new Floor());
 
-
+    capture();
 
 
 }
 
+
+
 int main(int argc, char **argv){
 	glutInit(&argc,argv);
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(windowHeight, windowWidth);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 

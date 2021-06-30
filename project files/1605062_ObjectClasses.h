@@ -11,6 +11,16 @@ struct point
 };
 typedef struct point Vector3D;
 
+class Ray
+{
+public:
+    Vector3D start;
+    Vector3D dir;
+    Ray(Vector3D &eye, Vector3D &pixel);
+
+
+};
+
 class Object
 {
 public:
@@ -19,6 +29,7 @@ public:
     double coEfficients[4] ;// reflection coefficients
     int shine; // exponent term of specular component
     virtual void draw();
+    virtual double intersect(Ray &r, double* color, int recLevel);
     void setColor();
     void setShine();
     void setCoEfficients();
@@ -37,6 +48,7 @@ public:
     double radius;
 //    Sphere(center, radius);
     void draw();
+    double intersect(Ray &r, double* color, int recLevel);
 
 };
 
@@ -46,6 +58,7 @@ public:
     Triangle();
 //    Sphere(center, radius);
     void draw();
+    double intersect(Ray &r, double* color, int recLevel);
 
 };
 
@@ -56,19 +69,9 @@ public:
     General();
 //    Sphere(center, radius);
     void draw();
+    double intersect(Ray &r, double* color, int recLevel);
 
 };
-
-class Light{
-public:
-    Vector3D lightPos;
-    double color[3];
-
-};
-
-
-extern vector <Object*> objects;
-extern vector <Light*> lights;
 
 
 class Floor: public Object{
@@ -82,54 +85,27 @@ public:
         tileLength=tileWidth;
         width = floorWidth;
     }
-    void draw(){
-    // write codes for drawing a checkerboard-like
-    // floor with alternate colors on adjacent tiles
-
-        int rows = width/tileLength;
-        int cols = rows; // square
-        bool white = true;
-        for(int i=0;i<rows;i++)
-        {
-            if(i%2==0)
-            {
-                white = true;
-            }
-            else
-            {
-                white = false;
-            }
-            for(int j=0;j<cols;j++)
-            {
-                Vector3D bottomLeft = {reference_point.x + j * tileLength ,reference_point.y + i * tileLength , -20};
-                Vector3D bottomRight = {bottomLeft.x+tileLength,bottomLeft.y,bottomLeft.z};
-                Vector3D topLeft = {bottomLeft.x, bottomLeft.y + tileLength, bottomLeft.z};
-                Vector3D topRight = {bottomLeft.x + tileLength, bottomLeft.y + tileLength, bottomLeft.z};
-
-
-
-                if(white)
-                {
-                    glColor3f(color1.x, color1.y, color1.z);
-                    white = false;
-                }
-                else
-                {
-                    glColor3f(color2.x, color2.y, color2.z);
-                    white = true;
-                }
-                glBegin(GL_QUADS);{
-                    glVertex3f(topRight.x, topRight.y,topRight.z);
-                    glVertex3f(bottomRight.x, bottomRight.y,bottomRight.z);
-                    glVertex3f(bottomLeft.x, bottomLeft.y,bottomLeft.z);
-                    glVertex3f(topLeft.x, topLeft.y,topLeft.z);
-                }glEnd();
-
-            }
-        }
-        glColor3f(1.0, 1.0, 1.0);
-    }
+    double intersect(Ray &r, double* color, int recLevel);
+    void draw();
 };
+
+
+class Light{
+public:
+    Vector3D lightPos;
+    double color[3];
+
+};
+
+
+
+
+extern vector <Object*> objects;
+extern vector <Light*> lights;
+
+
+
+
 
 
 Object::Object()
@@ -166,7 +142,10 @@ void Object::setShine()
 
 }
 
-
+double Object::intersect(Ray& r, double* color, int recLevel)
+{
+    return 0;
+}
 
 Sphere::Sphere()
 {
@@ -234,6 +213,11 @@ void Sphere::draw()
 //	cout<<"drawing sphere finished"<<endl;
 }
 
+
+double Sphere::intersect(Ray& r, double* color, int recLevel)
+{
+    return 0;
+}
 //void drawSphere(double radius,int slices,int stacks)
 //{
 //
@@ -258,6 +242,10 @@ void Triangle::draw()
     glColor3f(1.0, 1.0, 1.0);
 }
 
+double Triangle::intersect(Ray& r, double* color, int recLevel)
+{
+    return 0;
+}
 
 General::General()
 {
@@ -267,6 +255,78 @@ General::General()
 void General::draw()
 {
     //cout<<"drawing General"<<endl;
+}
+
+double General::intersect(Ray& r, double* color, int recLevel)
+{
+    return 0;
+}
+
+void Floor::draw(){
+// write codes for drawing a checkerboard-like
+// floor with alternate colors on adjacent tiles
+
+    int rows = width/tileLength;
+    int cols = rows; // square
+    bool white = true;
+    for(int i=0;i<rows;i++)
+    {
+        if(i%2==0)
+        {
+            white = true;
+        }
+        else
+        {
+            white = false;
+        }
+        for(int j=0;j<cols;j++)
+        {
+            Vector3D bottomLeft = {reference_point.x + j * tileLength ,reference_point.y + i * tileLength , -20};
+            Vector3D bottomRight = {bottomLeft.x+tileLength,bottomLeft.y,bottomLeft.z};
+            Vector3D topLeft = {bottomLeft.x, bottomLeft.y + tileLength, bottomLeft.z};
+            Vector3D topRight = {bottomLeft.x + tileLength, bottomLeft.y + tileLength, bottomLeft.z};
+
+
+
+            if(white)
+            {
+                glColor3f(color1.x, color1.y, color1.z);
+                white = false;
+            }
+            else
+            {
+                glColor3f(color2.x, color2.y, color2.z);
+                white = true;
+            }
+            glBegin(GL_QUADS);{
+                glVertex3f(topRight.x, topRight.y,topRight.z);
+                glVertex3f(bottomRight.x, bottomRight.y,bottomRight.z);
+                glVertex3f(bottomLeft.x, bottomLeft.y,bottomLeft.z);
+                glVertex3f(topLeft.x, topLeft.y,topLeft.z);
+            }glEnd();
+
+        }
+    }
+    glColor3f(1.0, 1.0, 1.0);
+}
+
+double Floor::intersect(Ray& r, double* color, int recLevel)
+{
+    return 0;
+}
+
+
+Ray::Ray(Vector3D &eye, Vector3D &pixel)
+{
+    start = eye;
+    dir.x = pixel.x-eye.x;
+    dir.y = pixel.y-eye.y;
+    dir.z = pixel.z-eye.z;
+    double magnitude = sqrt(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
+    dir.x = dir.x/magnitude;
+    dir.y = dir.y/magnitude;
+    dir.z = dir.z/magnitude;
+
 }
 
 void printSphere(Sphere *s)
