@@ -470,12 +470,17 @@ void display(){
     //glColor3f(1,0,0);
     //drawSquare(10);
 
-    drawSS();
+//    drawSS();
 //    cout<<"hi"<<endl;
 //    cout<<objects.size()<<endl;
-    cout<<objects[0]->color[0]<<endl;
+//    cout<<objects[0]->color[0]<<endl;
+//    objects[0]->draw();
+    drawAxes();
+    objects[3]->draw();
     objects[0]->draw();
+    objects[objects.size()-1]->draw();
 
+//    t->draw();
 //    drawSphere(10,10,10);
 //    drawCircle(30,24);
 
@@ -606,10 +611,10 @@ void loadData()
 //    inputFile>>t2>>t3;
 //    cout<<"kill me"<<endl;
 //    cout<<t1<<" "<<t2<<" "<<t3<<endl;
-    cout<<"hi"<<endl;
-    cout<<objects.size()<<endl;
-    drawSphere(5,10,10);
-    cout<<objects[0]->coEfficients[0]<<endl;
+    printSphere((Sphere *)objects[0]);
+    printTriangle((Triangle *)objects[3]);
+    objects.push_back((Object*) new Floor());
+
 
 
 

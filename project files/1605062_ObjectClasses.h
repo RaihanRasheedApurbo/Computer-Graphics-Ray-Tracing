@@ -73,14 +73,61 @@ extern vector <Light*> lights;
 
 class Floor: public Object{
 public:
-    double length;
+    double tileLength;
+    double width;
+    Vector3D color1 {1.0,1.0,1.0};
+    Vector3D color2 {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
     Floor(double floorWidth = 1000, double tileWidth = 20){
         reference_point={-floorWidth/2,-floorWidth/2,0};
-        length=tileWidth;
+        tileLength=tileWidth;
+        width = floorWidth;
     }
     void draw(){
     // write codes for drawing a checkerboard-like
     // floor with alternate colors on adjacent tiles
+
+        int rows = width/tileLength;
+        int cols = rows; // square
+        bool white = true;
+        for(int i=0;i<rows;i++)
+        {
+            if(i%2==0)
+            {
+                white = true;
+            }
+            else
+            {
+                white = false;
+            }
+            for(int j=0;j<cols;j++)
+            {
+                Vector3D bottomLeft = {reference_point.x + j * tileLength ,reference_point.y + i * tileLength , -20};
+                Vector3D bottomRight = {bottomLeft.x+tileLength,bottomLeft.y,bottomLeft.z};
+                Vector3D topLeft = {bottomLeft.x, bottomLeft.y + tileLength, bottomLeft.z};
+                Vector3D topRight = {bottomLeft.x + tileLength, bottomLeft.y + tileLength, bottomLeft.z};
+
+
+
+                if(white)
+                {
+                    glColor3f(color1.x, color1.y, color1.z);
+                    white = false;
+                }
+                else
+                {
+                    glColor3f(color2.x, color2.y, color2.z);
+                    white = true;
+                }
+                glBegin(GL_QUADS);{
+                    glVertex3f(topRight.x, topRight.y,topRight.z);
+                    glVertex3f(bottomRight.x, bottomRight.y,bottomRight.z);
+                    glVertex3f(bottomLeft.x, bottomLeft.y,bottomLeft.z);
+                    glVertex3f(topLeft.x, topLeft.y,topLeft.z);
+                }glEnd();
+
+            }
+        }
+        glColor3f(1.0, 1.0, 1.0);
     }
 };
 
@@ -130,58 +177,61 @@ Sphere::Sphere()
 
 void Sphere::draw()
 {
-    cout<<"drawing Sphere"<<endl;
-
-//    struct point points[100][100];
-//	int i,j;
-//	double h,r;
-//	int stacks = 10;
-//	int slices = 10;
-//	//generate points
-//	for(i=0;i<=stacks;i++)
-//	{
-//		h=radius*sin(((double)i/(double)stacks)*(pi/2));
-//		r=radius*cos(((double)i/(double)stacks)*(pi/2));
-//		for(j=0;j<=slices;j++)
-//		{
-//			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-//			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-//			points[i][j].z=h;
-//		}
-//	}
-//	//draw quads using generated points
-//	for(i=0;i<stacks;i++)
-//	{
+//    cout<<"drawing Sphere"<<endl;
+    struct point points[100][100];
+	int i,j;
+	double h,r;
+	int stacks = 50;
+	int slices = 50;
+	//generate points
+	for(i=0;i<=stacks;i++)
+	{
+		h=radius*sin(((double)i/(double)stacks)*(pi/2));
+		r=radius*cos(((double)i/(double)stacks)*(pi/2));
+		for(j=0;j<=slices;j++)
+		{
+			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
+			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+			points[i][j].z=h;
+		}
+	}
+	//draw quads using generated points
+	glTranslatef(reference_point.x,reference_point.y,reference_point.z);
+	glColor3f(color[0], color[1], color[2]);
+	for(i=0;i<stacks;i++)
+	{
 //        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
-//		for(j=0;j<slices;j++)
-//		{
-//			glBegin(GL_QUADS);{
-//			    //upper hemisphere
-//				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-//				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-//				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-//				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
-//                //lower hemisphere
-//                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
-//				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
-//				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
-//				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
-//			}glEnd();
-//		}
-//	}
-        glColor3f(1.0, 1.0, 1.0);
-		glBegin(GL_LINES);{
-		    glColor3f(1.0, 0, 0);
-			glVertex3f( 1000,0,0);
-			glVertex3f(-1000,0,0);
-            glColor3f(0, 1.0, 0);
-			glVertex3f(0,-1000,0);
-			glVertex3f(0, 1000,0);
-            glColor3f(0, 0, 1.0);
-			glVertex3f(0,0, 1000);
-			glVertex3f(0,0,-1000);
-		}glEnd();
-	cout<<"drawing sphere finished"<<endl;
+		for(j=0;j<slices;j++)
+		{
+			glBegin(GL_QUADS);{
+			    //upper hemisphere
+				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                //lower hemisphere
+                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
+				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
+				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
+				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
+			}glEnd();
+		}
+	}
+	glColor3f(1.0, 1.0, 1.0);
+	glTranslatef(-reference_point.x,-reference_point.y,-reference_point.z);
+//        glColor3f(1.0, 1.0, 1.0);
+//		glBegin(GL_LINES);{
+//		    glColor3f(1.0, 0, 0);
+//			glVertex3f( 1000,0,0);
+//			glVertex3f(-1000,0,0);
+//            glColor3f(0, 1.0, 0);
+//			glVertex3f(0,-1000,0);
+//			glVertex3f(0, 1000,0);
+//            glColor3f(0, 0, 1.0);
+//			glVertex3f(0,0, 1000);
+//			glVertex3f(0,0,-1000);
+//		}glEnd();
+//	cout<<"drawing sphere finished"<<endl;
 }
 
 //void drawSphere(double radius,int slices,int stacks)
@@ -197,6 +247,15 @@ Triangle::Triangle()
 void Triangle::draw()
 {
     //cout<<"drawing Triangle"<<endl;
+    glColor3f(color[0], color[1], color[2]);
+    glBegin(GL_TRIANGLES);
+    {
+        glVertex3f(p1.x,p1.y,p1.z);
+        glVertex3f(p2.x,p2.y,p2.z);
+        glVertex3f(p3.x,p3.y,p3.z);
+    }
+    glEnd();
+    glColor3f(1.0, 1.0, 1.0);
 }
 
 
