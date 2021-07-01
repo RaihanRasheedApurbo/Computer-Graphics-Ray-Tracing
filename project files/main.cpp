@@ -480,10 +480,12 @@ void display(){
 //    cout<<objects[0]->color[0]<<endl;
 //    objects[0]->draw();
     drawAxes();
+//    cout<<objects.size();
     for(int i=0;i<objects.size();i++)
     {
-        if(objects[i]->type == sphere || objects[i]->type == triangle)
+        if(objects[i]->type == triangle)
         {
+//            cout<<"drawing"<<endl;
             objects[i]->draw();
         }
 
@@ -527,10 +529,14 @@ void init(){
     r = {1,0,0};
     l = {0,0,-1};
 
+//    u = {0,1,0};
+//    l = {0.984,0,-0.174};
+//    r = {0.174,0,0.985};
 
 //    printPoint(l);
 //    printf("%d %d %d",1,1,2);
     pos = {0,0,100};
+//    pos = {40.46,44,31.2176};
     drawaxes = 1;
     shiftingAmount = 5;
     rotationAmount = (pi/18);
@@ -583,18 +589,20 @@ void capture()
     topLeft.x = topLeft.x + r.x * (0.5*du) - u.x * (0.5*dv);
     topLeft.y = topLeft.y + r.y * (0.5*du) - u.y * (0.5*dv);
     topLeft.z = topLeft.z + r.z * (0.5*du) - u.z * (0.5*dv);
+
 //    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
 //    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
-//    cout<<"eye:"<<endl;
-//    printPoint(pos);
+    cout<<"eye:"<<endl;
+    printPoint(pos);
 ////    cout<<"look:"<<endl;
 ////    printPoint(l);
 //    cout<<"up:"<<endl;
 //    printPoint(u);
 //    cout<<"right:"<<endl;
 //    printPoint(r);
-//    cout<<"topLeft: "<<endl;
-//    printPoint(topLeft);
+    cout<<"topLeft: "<<endl;
+    printPoint(topLeft);
+
 
     for(int i=0;i<dimension;i++)
     {
@@ -612,6 +620,10 @@ void capture()
 //                cout<<i<<" "<<j<<endl;
 //                printPoint(curPixel);
 //            }
+            if(i==dimension/2 && j==dimension/2)
+            {
+                cout<<"kill meh"<<endl;
+            }
             color[0] = 0;
             color[1] = 0;
             color[2] = 0;
@@ -654,30 +666,30 @@ void capture()
 
 void testData()
 {
-    Sphere* t = new Sphere;
-    t->reference_point.x = 10;
-    t->reference_point.y = 10;
-    t->reference_point.z = 10;
-    t->radius = 10;
-    t->color[0] - 0.0;
-    t->color[1] - 1.0;
-    t->color[2] - 0.0;
-    Vector3D e = {0,0,0};
-    Vector3D d = {-1,-1,-1};
-    Ray r(e,d);
-//    r.start = {20,0,0};
-//    r.dir = {-1,0,0};
-    double *color;
-    double result = t->intersect(r,color,4);
-    cout<<result;
-
-//    Triangle* t = new Triangle;
-//    t->p1 = {0,0,0};
-//    t->p2 = {10,0,0};
-//    t->p3 = {5,5,0};
+//    Sphere* t = new Sphere;
+//    t->reference_point.x = 10;
+//    t->reference_point.y = 10;
+//    t->reference_point.z = 10;
+//    t->radius = 10;
 //    t->color[0] - 0.0;
 //    t->color[1] - 1.0;
 //    t->color[2] - 0.0;
+//    Vector3D e = {0,0,0};
+//    Vector3D d = {-1,-1,-1};
+//    Ray r(e,d);
+////    r.start = {20,0,0};
+////    r.dir = {-1,0,0};
+//    double *color;
+//    double result = t->intersect(r,color,4);
+//    cout<<result;
+
+    Triangle* t = new Triangle;
+    t->p1 = {50,30,0};
+    t->p2 = {70,60,0};
+    t->p3 = {50,45,50};
+    t->color[0] = 0.0;
+    t->color[1] = 1.0;
+    t->color[2] = 0.0;
 //    Vector3D e = {154,-23,12};
 //    Vector3D d = {10,2.5,0};
 //    Ray r(e,d);
@@ -687,6 +699,7 @@ void testData()
 //    double result = t->intersect(r,color,4);
 //    cout<<result<<endl;
 //    cout<<(result>=0)<<endl;
+    objects.push_back(t);
 
 
 }

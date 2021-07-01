@@ -358,39 +358,76 @@ bool Triangle::insideTriangle(Vector3D &intersection)
     return false;
 }
 
+//double Triangle::intersect(Ray& r, double* color, int recLevel)
+//{
+//    Vector3D n,ro,rd,po,p;
+//    this->getPointNormalForm(n,po);
+//    ro = r.start;
+//    rd = r.dir;
+//
+//    double d = n.x*rd.x + n.y*rd.y + n.z*rd.z;
+//
+//    if(d==0) // plane and ray is parallel hence no intersection
+//    {
+//        return -10;
+//    }
+//
+//    double t = - (n.x*(ro.x-po.x)+n.y*(ro.y-po.y)+n.z*(ro.z-po.z)) / d;
+//
+//    if(t<0)
+//    {
+//        return -5;
+//    }
+//    // now we have to check whether the intersection point is inside the triangle
+//    Vector3D intersctionPoint = {ro.x+t*rd.x,ro.y+t*rd.y,ro.z+t*rd.z};
+////    printPoint(intersctionPoint);
+//    if(insideTriangle(intersctionPoint))
+//    {
+//        return t;
+//    }
+//    else
+//    {
+//        return -20;
+//    }
+//
+//    return -15;
+//}
+
+double determinantSolver3by3(double *a, double *b, double *c)
+{
+    return a[0]*(b[1]*c[2]-b[2]*c[1])
+          -b[0]*(a[1]*c[2]-a[2]*c[1])
+          +c[0]*(a[1]*b[2]-a[2]*b[1]);
+}
+
 double Triangle::intersect(Ray& r, double* color, int recLevel)
 {
-    Vector3D n,ro,rd,po,p;
-    this->getPointNormalForm(n,po);
-    ro = r.start;
-    rd = r.dir;
+//    double a[3],b[3],c[3],s[3];
+    double a[] = {p1.x-p2.x,p1.y-p2.y,p1.z-p2.z};
+    double b[] = {p1.x-p3.x,p1.y-p3.y,p1.z-p3.z};
+    double c[] = {r.dir.x,r.dir.y,r.dir.z};
+    double s[] = {p1.x-r.start.x,p1.y-r.start.y,p1.z-r.start.z};
 
-    double d = n.x*rd.x + n.y*rd.y + n.z*rd.z;
-
-    if(d==0) // plane and ray is parallel hence no intersection
+    double d = determinantSolver3by3(a,b,c);
+    if(d==0)
     {
         return -10;
     }
+    double db = determinantSolver3by3(s,b,c);
+    double dg = determinantSolver3by3(a,s,c);
+    double dt = determinantSolver3by3(a,b,s);
 
-    double t = - (n.x*(ro.x-po.x)+n.y*(ro.y-po.y)+n.z*(ro.z-po.z)) / d;
+    double beta = db/d;
+    double gama = dg/d;
+    double t = dt/d;
 
-    if(t<0)
-    {
-        return -5;
-    }
-    // now we have to check whether the intersection point is inside the triangle
-    Vector3D intersctionPoint = {ro.x+t*rd.x,ro.y+t*rd.y,ro.z+t*rd.z};
-//    printPoint(intersctionPoint);
-    if(insideTriangle(intersctionPoint))
+    if(beta+gama<=1 && beta>0 && gama>0 and t>0)
     {
         return t;
     }
-    else
-    {
-        return -20;
-    }
 
-    return -15;
+    return -5;
+    //double d = determinantSolver3by3(a,b,c);
 }
 
 General::General()
