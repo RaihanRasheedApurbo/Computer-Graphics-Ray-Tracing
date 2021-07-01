@@ -33,6 +33,8 @@ struct point u;
 struct point l;
 struct point r;
 
+void capture();
+
 struct point vectorSum(struct point p1,struct point p2)
 {
     struct point ans;
@@ -355,7 +357,8 @@ void keyboardListener(unsigned char key, int x,int y){
             u = rotateVector(u,r,rotationAmount);
             r = rotateVector(r,negateVector(prevUpVector),rotationAmount);
 
-
+        case '0':
+            capture();
 		default:
 			break;
 	}
@@ -479,7 +482,11 @@ void display(){
     drawAxes();
     for(int i=0;i<objects.size();i++)
     {
-        objects[i]->draw();
+        if(objects[i]->type == sphere || objects[i]->type == triangle)
+        {
+            objects[i]->draw();
+        }
+
     }
 //    objects[3]->draw();
 //    objects[0]->draw();
@@ -561,8 +568,10 @@ double windowWidth = 500; // used in main and in capture function
 
 void capture()
 {
+    dimension = 500;
     bitmap_image image(dimension,dimension);
-    cout<<tan(pi*viewAngle/180/2)<<" "<<(windowHeight/2.0)<<endl;
+    cout<<"capturing"<<endl;
+//    cout<<tan(pi*viewAngle/180/2)<<" "<<(windowHeight/2.0)<<endl;
     double planeDistance = (windowHeight/2.0)/tan(pi*viewAngle/180/2);
     Vector3D topLeft;
     topLeft.x = pos.x + l.x *planeDistance - r.x*windowWidth/2 + u.x*windowHeight/2;
@@ -574,18 +583,18 @@ void capture()
     topLeft.x = topLeft.x + r.x * (0.5*du) - u.x * (0.5*dv);
     topLeft.y = topLeft.y + r.y * (0.5*du) - u.y * (0.5*dv);
     topLeft.z = topLeft.z + r.z * (0.5*du) - u.z * (0.5*dv);
-    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
-    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
-    cout<<"eye:"<<endl;
-    printPoint(pos);
-    cout<<"look:"<<endl;
-    printPoint(l);
-    cout<<"up:"<<endl;
-    printPoint(u);
-    cout<<"right:"<<endl;
-    printPoint(r);
-    cout<<"topLeft: "<<endl;
-    printPoint(topLeft);
+//    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
+//    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
+//    cout<<"eye:"<<endl;
+//    printPoint(pos);
+////    cout<<"look:"<<endl;
+////    printPoint(l);
+//    cout<<"up:"<<endl;
+//    printPoint(u);
+//    cout<<"right:"<<endl;
+//    printPoint(r);
+//    cout<<"topLeft: "<<endl;
+//    printPoint(topLeft);
 
     for(int i=0;i<dimension;i++)
     {
@@ -605,17 +614,40 @@ void capture()
 //            }
             color[0] = 0;
             color[1] = 0;
-            color[2] = 255;
+            color[2] = 0;
+            double tmin = INT_MAX;
             for(int k=0;k<objects.size();k++)
             {
-                double t = objects[k]->intersect(r,color,levelOfRecursion);
-                image.set_pixel(i,j,color[0],color[1],color[2]);
+                Object *curObj = objects[k];
+                if(curObj->type == triangle)
+                {
+                    double t = curObj->intersect(r,color,levelOfRecursion);
+                    if(t>=0)
+                    {
+                        if(tmin>t)
+                        {
+                            tmin = min(tmin,t);
+                            color[0] = curObj->color[0];
+                            color[1] = curObj->color[1];
+                            color[2] = curObj->color[2];
+                        }
+
+                    }
+
+                }
+
             }
+            if(tmin!=INT_MAX)
+            {
+                image.set_pixel(j,i,color[0]*255,color[1]*255,color[2]*255);
+            }
+
             delete[] color;
 
         }
     }
     image.save_image("test.bmp");
+    cout<<"capture completed"<<endl;
 
 }
 
@@ -638,6 +670,24 @@ void testData()
     double *color;
     double result = t->intersect(r,color,4);
     cout<<result;
+
+//    Triangle* t = new Triangle;
+//    t->p1 = {0,0,0};
+//    t->p2 = {10,0,0};
+//    t->p3 = {5,5,0};
+//    t->color[0] - 0.0;
+//    t->color[1] - 1.0;
+//    t->color[2] - 0.0;
+//    Vector3D e = {154,-23,12};
+//    Vector3D d = {10,2.5,0};
+//    Ray r(e,d);
+////    r.start = {20,0,0};
+////    r.dir = {-1,0,0};
+//    double *color;
+//    double result = t->intersect(r,color,4);
+//    cout<<result<<endl;
+//    cout<<(result>=0)<<endl;
+
 
 }
 
@@ -707,7 +757,7 @@ void loadData()
     printTriangle((Triangle *)objects[3]);
     objects.push_back((Object*) new Floor());
 
-    capture();
+//    capture();
 
 
 }
@@ -734,8 +784,8 @@ int main(int argc, char **argv){
 	glutMouseFunc(mouseListener);
 
 
-//    loadData();
-    testData();
+    loadData();
+//    testData();
 	glutMainLoop();		//The main loop of OpenGL
 
 

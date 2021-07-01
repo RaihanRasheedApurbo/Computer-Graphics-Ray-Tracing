@@ -3,6 +3,9 @@ using namespace std;
 #define pi (2*acos(0.0))
 #include <windows.h>
 #include <glut.h>
+#define PRECISION_FIX 0.001
+
+enum ObjectType {sphere, triangle, plane, board};
 
 void printPoint(struct point p);
 struct point
@@ -24,6 +27,7 @@ public:
 class Object
 {
 public:
+    enum ObjectType type;
     Vector3D reference_point; // should have x, y, z
     double color[3];
     double coEfficients[4] ;// reflection coefficients
@@ -59,6 +63,8 @@ public:
 //    Sphere(center, radius);
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
+    void getPointNormalForm(Vector3D &n, Vector3D &po);
+    bool insideTriangle(Vector3D &intersection);
 
 };
 
@@ -80,11 +86,7 @@ public:
     double width;
     Vector3D color1 {1.0,1.0,1.0};
     Vector3D color2 {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
-    Floor(double floorWidth = 1000, double tileWidth = 20){
-        reference_point={-floorWidth/2,-floorWidth/2,0};
-        tileLength=tileWidth;
-        width = floorWidth;
-    }
+    Floor(double floorWidth = 1000, double tileWidth = 20);
     double intersect(Ray &r, double* color, int recLevel);
     void draw();
 };
@@ -149,6 +151,7 @@ double Object::intersect(Ray& r, double* color, int recLevel)
 
 Sphere::Sphere()
 {
+    this->type = sphere;
     //cout<<"creating from Sphere"<<endl;
 }
 
@@ -229,7 +232,7 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
 
     double a = rd.x*rd.x + rd.y*rd.y + rd.z*rd.z;
 
-    cout<<a<<" "<<b<<" "<<c<<endl;
+//    cout<<a<<" "<<b<<" "<<c<<endl;
 
     double d = sqrt(b*b-4*a*c); // discriminant
     if(d < 0)
@@ -240,7 +243,7 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
     double t1 = (-b + d) / (2 * a);
     double t2 = (-b - d) / (2 * a);
 
-    cout<<t1<<" "<<t2<<endl;
+//    cout<<t1<<" "<<t2<<endl;
 
     if(t1<0 && t2<0)
     {
@@ -274,6 +277,8 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
 
 Triangle::Triangle()
 {
+
+    type = triangle;
     //cout<<"creating from Triangle"<<endl;
 }
 
@@ -291,13 +296,107 @@ void Triangle::draw()
     glColor3f(1.0, 1.0, 1.0);
 }
 
+void Triangle::getPointNormalForm(Vector3D &n, Vector3D &po)
+{
+    // let three points of the triangle is a,b,c
+    Vector3D ba = {(p1.x-p2.x),(p1.y-p2.y),(p1.z-p2.z)}; // ba = a-b
+    Vector3D bc = {(p3.x-p2.x),(p3.y-p2.y),(p3.z-p2.z)}; // bc = c-b
+
+    Vector3D normal = {ba.y*bc.z-ba.z*bc.y,ba.z*bc.x-ba.x*bc.z,ba.x*bc.y-bc.x*ba.y};
+    double magnitude = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
+
+    normal.x = normal.x/magnitude;
+    if(abs(normal.x)<PRECISION_FIX)
+    {
+        normal.x = 0;
+    }
+    normal.y = normal.y/magnitude;
+    if(abs(normal.y)<PRECISION_FIX)
+    {
+        normal.y = 0;
+    }
+    normal.z = normal.z/magnitude;
+    if(abs(normal.z)<PRECISION_FIX)
+    {
+        normal.z = 0;
+    }
+    n = normal;
+    po = p2;
+
+    return;
+
+}
+
+bool Triangle::insideTriangle(Vector3D &intersection)
+{
+    // solving the system of linear equation
+    double a1 = p2.x-p1.x;
+    double b1 = p3.x-p1.x;
+    double a2 = p2.y-p1.y;
+    double b2 = p3.y-p1.y;
+    double c1 = intersection.x;
+    double c2 = intersection.y;
+    double d = a1*b2-b1*a2;
+    double dx = c1*b2-c2*b1;
+    double dy = a1*c2-a2*c1;
+
+    // if no solution exists d==0 ...
+    //this case won't arise in my opinion because intersection point is always valid
+    if(d==0)
+    {
+        return false;
+    }
+
+    double x = dx/d;
+    double y = dy/d;
+    if(x+y-1<=0 && 0<=x && x<= 1 && 0<=y && y<=1) // checking a+b <=1 constraints
+    {
+
+        return true;
+    }
+
+    return false;
+}
+
 double Triangle::intersect(Ray& r, double* color, int recLevel)
 {
-    return 0;
+    Vector3D n,ro,rd,po,p;
+    this->getPointNormalForm(n,po);
+    ro = r.start;
+    rd = r.dir;
+
+    double d = n.x*rd.x + n.y*rd.y + n.z*rd.z;
+
+    if(d==0) // plane and ray is parallel hence no intersection
+    {
+        return -10;
+    }
+
+    double t = - (n.x*(ro.x-po.x)+n.y*(ro.y-po.y)+n.z*(ro.z-po.z)) / d;
+
+    if(t<0)
+    {
+        return -5;
+    }
+    // now we have to check whether the intersection point is inside the triangle
+    Vector3D intersctionPoint = {ro.x+t*rd.x,ro.y+t*rd.y,ro.z+t*rd.z};
+//    printPoint(intersctionPoint);
+    if(insideTriangle(intersctionPoint))
+    {
+        return t;
+    }
+    else
+    {
+        return -20;
+    }
+
+    return -15;
 }
 
 General::General()
 {
+
+    type = plane;
     //cout<<"creating from General"<<endl;
 }
 
@@ -311,7 +410,19 @@ double General::intersect(Ray& r, double* color, int recLevel)
     return 0;
 }
 
-void Floor::draw(){
+Floor::Floor(double floorWidth, double tileWidth)
+{
+
+
+
+        type = board;
+        reference_point={-floorWidth/2,-floorWidth/2,0};
+        tileLength=tileWidth;
+        width = floorWidth;
+    }
+
+void Floor::draw()
+{
 // write codes for drawing a checkerboard-like
 // floor with alternate colors on adjacent tiles
 
@@ -387,9 +498,9 @@ Ray::Ray(Vector3D &eye, Vector3D &pixel)
     {
         dir.z = 0;
     }
-    cout<<"start and dir of ray"<<endl;
-    cout<<start.x<<" "<<start.y<<" "<<start.z<<endl;
-    cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<endl;
+//    cout<<"start and dir of ray"<<endl;
+//    cout<<start.x<<" "<<start.y<<" "<<start.z<<endl;
+//    cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<endl;
 
 }
 
