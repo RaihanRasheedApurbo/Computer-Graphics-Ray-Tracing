@@ -71,11 +71,11 @@ struct point rotateVector(struct point p1, struct point p2, double angle)
 
 }
 
-void printPoint(struct point p)
-{
-
-    cout<<p.x<<" "<<p.y<<" "<<p.z<<endl;
-}
+//void printPoint(struct point p)
+//{
+//
+//    cout<<p.x<<" "<<p.y<<" "<<p.z<<endl;
+//}
 
 void counterClockRotateOFLookVectorINYAxis()
 {
@@ -477,9 +477,13 @@ void display(){
 //    cout<<objects[0]->color[0]<<endl;
 //    objects[0]->draw();
     drawAxes();
-    objects[3]->draw();
-    objects[0]->draw();
-    objects[objects.size()-1]->draw();
+    for(int i=0;i<objects.size();i++)
+    {
+        objects[i]->draw();
+    }
+//    objects[3]->draw();
+//    objects[0]->draw();
+//    objects[objects.size()-1]->draw();
 
 //    t->draw();
 //    drawSphere(10,10,10);
@@ -615,6 +619,28 @@ void capture()
 
 }
 
+
+void testData()
+{
+    Sphere* t = new Sphere;
+    t->reference_point.x = 10;
+    t->reference_point.y = 10;
+    t->reference_point.z = 10;
+    t->radius = 10;
+    t->color[0] - 0.0;
+    t->color[1] - 1.0;
+    t->color[2] - 0.0;
+    Vector3D e = {0,0,0};
+    Vector3D d = {-1,-1,-1};
+    Ray r(e,d);
+//    r.start = {20,0,0};
+//    r.dir = {-1,0,0};
+    double *color;
+    double result = t->intersect(r,color,4);
+    cout<<result;
+
+}
+
 void loadData()
 {
     string file1 = "scene.txt";
@@ -708,7 +734,8 @@ int main(int argc, char **argv){
 	glutMouseFunc(mouseListener);
 
 
-    loadData();
+//    loadData();
+    testData();
 	glutMainLoop();		//The main loop of OpenGL
 
 

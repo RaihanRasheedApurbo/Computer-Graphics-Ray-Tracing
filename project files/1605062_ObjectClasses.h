@@ -4,7 +4,7 @@ using namespace std;
 #include <windows.h>
 #include <glut.h>
 
-
+void printPoint(struct point p);
 struct point
 {
 	double x,y,z;
@@ -216,7 +216,56 @@ void Sphere::draw()
 
 double Sphere::intersect(Ray& r, double* color, int recLevel)
 {
-    return 0;
+    Vector3D &co = reference_point;
+    Vector3D &ro = r.start;
+    Vector3D &rd = r.dir;
+    // at^2 + bt + c = 0 is general form of the parametic equation
+    //
+    double c =  (ro.x-co.x)*(ro.x-co.x) + (ro.y-co.y)*(ro.y-co.y) +
+                (ro.z-co.z)*(ro.z-co.z) - radius * radius;
+
+    double b = 2 * ((ro.x-co.x)*rd.x + (ro.y-co.y)*rd.y + (ro.z-co.z)*rd.z);
+
+
+    double a = rd.x*rd.x + rd.y*rd.y + rd.z*rd.z;
+
+    cout<<a<<" "<<b<<" "<<c<<endl;
+
+    double d = sqrt(b*b-4*a*c); // discriminant
+    if(d < 0)
+    {
+        return -5;
+    }
+
+    double t1 = (-b + d) / (2 * a);
+    double t2 = (-b - d) / (2 * a);
+
+    cout<<t1<<" "<<t2<<endl;
+
+    if(t1<0 && t2<0)
+    {
+        return -5;
+    }
+
+    if(t1>=0 && t2>=0)
+    {
+        return min(t1,t2); // we might need to incorporate near distance here later
+    }
+
+    // only 1 case left ... one of t1,t2 is positive
+    if(t1>=0)
+    {
+        return t1;
+    }
+    else
+    {
+        return t2;
+    }
+
+
+
+    // this return will never get executed
+    return -15;
 }
 //void drawSphere(double radius,int slices,int stacks)
 //{
@@ -324,8 +373,23 @@ Ray::Ray(Vector3D &eye, Vector3D &pixel)
     dir.z = pixel.z-eye.z;
     double magnitude = sqrt(dir.x*dir.x+dir.y*dir.y+dir.z*dir.z);
     dir.x = dir.x/magnitude;
+    if(abs(dir.x)<0.00001)
+    {
+        dir.x = 0;
+    }
     dir.y = dir.y/magnitude;
+    if(abs(dir.y)<0.00001)
+    {
+        dir.y = 0;
+    }
     dir.z = dir.z/magnitude;
+    if(abs(dir.z)<0.00001)
+    {
+        dir.z = 0;
+    }
+    cout<<"start and dir of ray"<<endl;
+    cout<<start.x<<" "<<start.y<<" "<<start.z<<endl;
+    cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<endl;
 
 }
 
@@ -425,7 +489,11 @@ Light* readLight(ifstream &inputFile)
 }
 
 
+void printPoint(struct point p)
+{
 
+    cout<<p.x<<" "<<p.y<<" "<<p.z<<endl;
+}
 
 
 
