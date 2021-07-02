@@ -483,7 +483,7 @@ void display(){
 //    cout<<objects.size();
     for(int i=0;i<objects.size();i++)
     {
-        if(objects[i]->type == triangle)
+        if(true)
         {
 //            cout<<"drawing"<<endl;
             objects[i]->draw();
@@ -592,16 +592,16 @@ void capture()
 
 //    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
 //    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
-    cout<<"eye:"<<endl;
-    printPoint(pos);
+//    cout<<"eye:"<<endl;
+//    printPoint(pos);
 ////    cout<<"look:"<<endl;
 ////    printPoint(l);
 //    cout<<"up:"<<endl;
 //    printPoint(u);
 //    cout<<"right:"<<endl;
 //    printPoint(r);
-    cout<<"topLeft: "<<endl;
-    printPoint(topLeft);
+//    cout<<"topLeft: "<<endl;
+//    printPoint(topLeft);
 
 
     for(int i=0;i<dimension;i++)
@@ -615,33 +615,58 @@ void capture()
 
             Ray r(pos,curPixel);
             double *color = new double[3];
+            double *minColor = new double[3];
 //            if(i%256==0 && j%256==0)
 //            {
 //                cout<<i<<" "<<j<<endl;
 //                printPoint(curPixel);
 //            }
-            if(i==dimension/2 && j==dimension/2)
-            {
-                cout<<"kill meh"<<endl;
-            }
+//            if(i==dimension/2 && j==dimension/2)
+//            {
+//                cout<<"kill meh"<<endl;
+//            }
             color[0] = 0;
             color[1] = 0;
             color[2] = 0;
+            minColor[0] = 0;
+            minColor[1] = 0;
+            minColor[2] = 0;
+
             double tmin = INT_MAX;
             for(int k=0;k<objects.size();k++)
             {
+//                if(k>=1)
+//                {
+//                    break;
+//                }
                 Object *curObj = objects[k];
-                if(curObj->type == triangle)
+                if(true)
                 {
                     double t = curObj->intersect(r,color,levelOfRecursion);
                     if(t>=0)
                     {
                         if(tmin>t)
                         {
+//                            if(i==250 && j == 350)
+//                            {
+//                                cout<<curObj->type<<endl;
+//                            }
                             tmin = min(tmin,t);
-                            color[0] = curObj->color[0];
-                            color[1] = curObj->color[1];
-                            color[2] = curObj->color[2];
+                            if(curObj->type != board)
+                            {
+                                minColor[0] = curObj->color[0];
+                                minColor[1] = curObj->color[1];
+                                minColor[2] = curObj->color[2];
+                            }
+                            else
+                            {
+                                minColor[0] = color[0];
+                                minColor[1] = color[1];
+                                minColor[2] = color[2];
+//                                cout<<color[0]<<" "<<color[1]<<" "<<color[2]<<endl;
+                            }
+
+
                         }
 
                     }
@@ -651,7 +676,17 @@ void capture()
             }
             if(tmin!=INT_MAX)
             {
-                image.set_pixel(j,i,color[0]*255,color[1]*255,color[2]*255);
+//                if(i==250 && j == 350)
+//                {
+//                    cout<<i<<" "<<j<<" "<<tmin<<endl;
+//
+//                }
+
+                image.set_pixel(j,i,minColor[0]*255,minColor[1]*255,minColor[2]*255);
+            }
+            else
+            {
+                image.set_pixel(j,i,255,255,255);
             }
 
             delete[] color;

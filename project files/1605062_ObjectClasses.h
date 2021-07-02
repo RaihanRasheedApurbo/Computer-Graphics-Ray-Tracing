@@ -84,9 +84,11 @@ class Floor: public Object{
 public:
     double tileLength;
     double width;
-    Vector3D color1 {1.0,1.0,1.0};
-    Vector3D color2 {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
+    Vector3D normal {0,0,1};
+    double color1[3] = {1.0,1.0,1.0};
+    double color2[3] = {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
     Floor(double floorWidth = 1000, double tileWidth = 20);
+    bool insideFloor(Vector3D &intersect);
     double intersect(Ray &r, double* color, int recLevel);
     void draw();
 };
@@ -444,7 +446,7 @@ void General::draw()
 
 double General::intersect(Ray& r, double* color, int recLevel)
 {
-    return 0;
+    return -5;
 }
 
 Floor::Floor(double floorWidth, double tileWidth)
@@ -478,7 +480,7 @@ void Floor::draw()
         }
         for(int j=0;j<cols;j++)
         {
-            Vector3D bottomLeft = {reference_point.x + j * tileLength ,reference_point.y + i * tileLength , -20};
+            Vector3D bottomLeft = {reference_point.x + j * tileLength ,reference_point.y + i * tileLength , reference_point.z};
             Vector3D bottomRight = {bottomLeft.x+tileLength,bottomLeft.y,bottomLeft.z};
             Vector3D topLeft = {bottomLeft.x, bottomLeft.y + tileLength, bottomLeft.z};
             Vector3D topRight = {bottomLeft.x + tileLength, bottomLeft.y + tileLength, bottomLeft.z};
@@ -487,12 +489,12 @@ void Floor::draw()
 
             if(white)
             {
-                glColor3f(color1.x, color1.y, color1.z);
+                glColor3f(color1[0], color1[1], color1[2]);
                 white = false;
             }
             else
             {
-                glColor3f(color2.x, color2.y, color2.z);
+                glColor3f(color2[0], color2[1], color2[2]);
                 white = true;
             }
             glBegin(GL_QUADS);{
@@ -507,11 +509,96 @@ void Floor::draw()
     glColor3f(1.0, 1.0, 1.0);
 }
 
-double Floor::intersect(Ray& r, double* color, int recLevel)
+bool Floor::insideFloor(Vector3D &intersect)
 {
-    return 0;
+
+//            if(true)
+
+                if(-width/2<=intersect.x && intersect.x<=width/2
+               &&
+               -width/2<=intersect.y && intersect.y<=width/2)
+                {
+                    return true;
+                }
+
+
+
+
+
+
+    return false;
 }
 
+double Floor::intersect(Ray& r, double* color, int recLevel)
+{
+    Vector3D n,ro,rd,po,p;
+    n = normal;
+    po = reference_point;
+    ro = r.start;
+    rd = r.dir;
+
+    double d = n.x*rd.x + n.y*rd.y + n.z*rd.z;
+
+    if(d==0) // plane and ray is parallel hence no intersection
+    {
+        return -10;
+    }
+
+    double t = - (n.x*(ro.x-po.x)+n.y*(ro.y-po.y)+n.z*(ro.z-po.z)) / d;
+
+    if(t<0)
+    {
+        return -5;
+    }
+    // now we have to check whether the intersection point is inside the triangle
+    Vector3D intersctionPoint = {ro.x+t*rd.x,ro.y+t*rd.y,ro.z+t*rd.z};
+//    printPoint(intersctionPoint);
+    if(insideFloor(intersctionPoint))
+    {
+        int colDist = floor(abs(reference_point.x - intersctionPoint.x) / tileLength);
+        int rowDist = floor(abs(reference_point.y - intersctionPoint.y) / tileLength);
+
+
+        if(rowDist%2==0)
+        {
+            if(colDist%2==0)
+            {
+                color[0] = color1[0];
+                color[1] = color1[1];
+                color[2] = color1[2];
+            }
+            else
+            {
+                color[0] = color2[0];
+                color[1] = color2[1];
+                color[2] = color2[2];
+            }
+        }
+        else
+        {
+            if(colDist%2!=0)
+            {
+                color[0] = color1[0];
+                color[1] = color1[1];
+                color[2] = color1[2];
+            }
+            else
+            {
+                color[0] = color2[0];
+                color[1] = color2[1];
+                color[2] = color2[2];
+            }
+        }
+
+        return t;
+
+    }
+
+
+
+    return -15;
+
+}
 
 Ray::Ray(Vector3D &eye, Vector3D &pixel)
 {
