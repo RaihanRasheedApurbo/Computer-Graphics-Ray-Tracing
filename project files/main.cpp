@@ -356,9 +356,11 @@ void keyboardListener(unsigned char key, int x,int y){
 //			drawgrid=1-drawgrid;
             u = rotateVector(u,r,rotationAmount);
             r = rotateVector(r,negateVector(prevUpVector),rotationAmount);
+            break;
 
         case '0':
             capture();
+            break;
 		default:
 			break;
 	}
@@ -590,18 +592,18 @@ void capture()
     topLeft.y = topLeft.y + r.y * (0.5*du) - u.y * (0.5*dv);
     topLeft.z = topLeft.z + r.z * (0.5*du) - u.z * (0.5*dv);
 
-//    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
-//    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
-//    cout<<"eye:"<<endl;
-//    printPoint(pos);
-////    cout<<"look:"<<endl;
-////    printPoint(l);
-//    cout<<"up:"<<endl;
-//    printPoint(u);
-//    cout<<"right:"<<endl;
-//    printPoint(r);
-//    cout<<"topLeft: "<<endl;
-//    printPoint(topLeft);
+    cout<<"du: "<<du<<" dv: "<<dv<<" dist: "<<planeDistance<<endl;
+    cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
+    cout<<"eye:"<<endl;
+    printPoint(pos);
+//    cout<<"look:"<<endl;
+//    printPoint(l);
+    cout<<"up:"<<endl;
+    printPoint(u);
+    cout<<"right:"<<endl;
+    printPoint(r);
+    cout<<"topLeft: "<<endl;
+    printPoint(topLeft);
 
 
     for(int i=0;i<dimension;i++)

@@ -76,6 +76,7 @@ public:
 //    Sphere(center, radius);
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
+    bool insideGeneral(Vector3D &p);
 
 };
 
@@ -444,9 +445,118 @@ void General::draw()
     //cout<<"drawing General"<<endl;
 }
 
+bool General::insideGeneral(Vector3D &p)
+{
+    if(length!=0)
+    {
+        if(p.x<reference_point.x || p.x>reference_point.x+length)
+        {
+            return false;
+        }
+    }
+    if(width!=0)
+    {
+        if(p.y<reference_point.y || p.y>reference_point.y+width)
+        {
+            return false;
+        }
+    }
+
+    if(height!=0)
+    {
+        if(p.z<reference_point.z || p.z>reference_point.z+height)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 double General::intersect(Ray& r, double* color, int recLevel)
 {
-    return -5;
+    Vector3D rd,ro;
+    double A = constants[0], B = constants[1],  C = constants[2],
+     D = constants[3],  E = constants[4], F = constants[5], G = constants[6],
+      H = constants[7], I = constants[8], J = constants[9];
+    rd = r.dir;
+    ro = r.start;
+
+    double a = A*rd.x*rd.x + B*rd.y*rd.y + C*rd.z*rd.z +
+               D*rd.x*rd.y + E*rd.x*rd.z + F*rd.y*rd.z ;
+
+    double b = 2*A*ro.x*rd.x + 2*B*ro.y*rd.y + 2*C*ro.z*rd.z +
+               D*ro.x*rd.y + D*ro.y*rd.x + E*ro.x*rd.z + E*ro.z*rd.x + F*ro.y*rd.z + F*ro.z*rd.y +
+               G*rd.x + H*rd.y + I*rd.z;
+
+    double c = A*ro.x*ro.x + B*ro.y*ro.y + C*ro.z*ro.z +
+               D*ro.x*ro.y + E*ro.x*ro.z + F*ro.y*ro.z +
+               G*ro.x + H*ro.y + I*ro.z + J;
+
+    double d = sqrt(b*b-4*a*c); // discriminant
+    if(d < 0)
+    {
+        return -5;
+    }
+
+    double t1 = (-b + d) / (2 * a);
+    double t2 = (-b - d) / (2 * a);
+
+
+    if(t1<0 && t2<0)
+    {
+        return -5;
+    }
+
+
+
+    if(t1>=0 && t2>=0)
+    {
+        if(t1>t2) // assuring that t1 contains the small value of two ts
+        {
+            double temp = t2;
+            t2 = t1;
+            t1 = temp;
+        }
+        Vector3D i1 = {ro.x+t1*rd.x,ro.y+t1*rd.y,ro.z+t1*rd.z};
+        Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
+        if(insideGeneral(i1))
+        {
+            return t1;
+        }
+        if(insideGeneral(i2))
+        {
+            return t2;
+        }
+        return -10;
+
+    }
+
+    // only 1 case left ... one of t1,t2 is positive
+    if(t1>=0)
+    {
+        Vector3D i1 = {ro.x+t1*rd.x,ro.y+t1*rd.y,ro.z+t1*rd.z};
+        if(insideGeneral(i1))
+        {
+            return t1;
+        }
+        return -15;
+    }
+    else
+    {
+
+        Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
+        if(insideGeneral(i2))
+        {
+            return t2;
+        }
+        return -20;
+    }
+
+
+
+
+    return -100;
 }
 
 Floor::Floor(double floorWidth, double tileWidth)
