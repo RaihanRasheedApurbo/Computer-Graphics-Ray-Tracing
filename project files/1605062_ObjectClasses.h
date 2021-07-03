@@ -53,6 +53,8 @@ public:
 //    Sphere(center, radius);
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
+    void getPhongLighting(Ray &r, double t, double* color);
+    Vector3D getNormal(Vector3D &intersectPoint);
 
 };
 
@@ -99,6 +101,7 @@ class Light{
 public:
     Vector3D lightPos;
     double color[3];
+    void draw();
 
 };
 
@@ -107,7 +110,7 @@ public:
 
 extern vector <Object*> objects;
 extern vector <Light*> lights;
-
+extern double globalColor[3];
 
 
 
@@ -219,6 +222,118 @@ void Sphere::draw()
 //	cout<<"drawing sphere finished"<<endl;
 }
 
+Vector3D Sphere::getNormal(Vector3D &intersectPoint)
+{
+    Vector3D ret = {intersectPoint.x-reference_point.x, intersectPoint.y-reference_point.y, intersectPoint.z-reference_point.z};
+    double magnitude = sqrt(ret.x*ret.x + ret.y*ret.y + ret.z*ret.z);
+    ret.x = ret.x/magnitude;
+    if(abs(ret.x-0)<PRECISION_FIX)
+    {
+        ret.x = 0;
+    }
+    ret.y = ret.y/magnitude;
+    if(abs(ret.y-0)<PRECISION_FIX)
+    {
+        ret.y = 0;
+    }ret.z = ret.z/magnitude;
+    if(abs(ret.z-0)<PRECISION_FIX)
+    {
+        ret.z = 0;
+    }
+    return ret;
+}
+
+
+
+void Sphere::getPhongLighting(Ray &r, double t, double* color)
+{
+    Vector3D intersectionPoint = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z};
+    Vector3D normalAtIntersect = getNormal(intersectionPoint);
+    // adding epsilon to elevate intersection point...
+    double epsilon = 2*0.01;
+
+//    cout<<"before phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    for(int i=0;i<lights.size();i++)
+    {
+        if(true)
+        {
+            Light *curLight = lights[i];
+            Ray rl(intersectionPoint,curLight->lightPos);
+            rl.start = {intersectionPoint.x + epsilon*rl.dir.x, intersectionPoint.y + epsilon*rl.dir.y, intersectionPoint.z + epsilon*rl.dir.z};
+//            double lightT = (curLight->lightPos.x-rl.start.x)/rl.dir.x; //    Rox + t * Rdirl = light.x
+            Vector3D distanceVec = {curLight->lightPos.x-intersectionPoint.x, curLight->lightPos.y-intersectionPoint.y, curLight->lightPos.z-intersectionPoint.z};
+            double lightT = sqrt(distanceVec.x*distanceVec.x + distanceVec.y*distanceVec.y + distanceVec.z*distanceVec.z);
+
+            double *dummyColor = new double[3];
+            bool obsecured = false;
+            for(int j=0;j<objects.size();j++)
+            {
+                double t = objects[j]->intersect(rl,dummyColor,0);
+                if(t>=0)
+                {
+                    if(t>25)
+                    {
+                            if(lightT>t)
+                        {
+                            obsecured = true;
+                            break;
+                        }
+                    }
+
+                }
+            }
+            delete[] dummyColor;
+            if(obsecured == false)
+            {
+
+                double lambertValue = rl.dir.x * normalAtIntersect.x +
+                rl.dir.y * normalAtIntersect.y + rl.dir.z * normalAtIntersect.z ;
+                double diffuseCo = this->coEfficients[1];
+                if(lambertValue>0)
+                {
+                    color[0] += curLight->color[0]*diffuseCo*lambertValue*this->color[0];
+                    color[1] += curLight->color[1]*diffuseCo*lambertValue*this->color[1];
+                    color[2] += curLight->color[2]*diffuseCo*lambertValue*this->color[2];
+                }
+
+                double dDotN = lambertValue;
+//                d-2(d*n)n
+                Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
+                rl.dir.y-2*dDotN*normalAtIntersect.y, rl.dir.z-2*dDotN*normalAtIntersect.z};
+
+                double phongValue = incidentRay.x * r.dir.x +
+                incidentRay.y * r.dir.y + incidentRay.z * r.dir.z;
+                double phongConst = pow(phongValue,this->shine);
+                double specularCo = this->coEfficients[2];
+    //            if(phongConst <0 || lambertValue < 0)
+    //            {
+    //                cout<<" kill me"<<endl;
+    //            }
+                if(phongValue>0)
+                {
+                    color[0] += curLight->color[0]*specularCo*phongConst*this->color[0];
+                    color[1] += curLight->color[1]*specularCo*phongConst*this->color[1];
+                    color[2] += curLight->color[2]*specularCo*phongConst*this->color[2];
+                }
+            }
+
+
+
+
+        }
+    }
+//    cout<<color[0]+color[1]+color[2]<<endl;
+//    if(globalColor[0]+globalColor[1]+globalColor[2] < color[0]+color[1]+color[2])
+//    {
+//        cout<<"hi"<<endl;
+//        globalColor[0] = color[0];
+//        globalColor[1] = color[1];
+//        globalColor[2] = color[2];
+//
+//    }
+//    cout<<"after phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    return;
+}
 
 double Sphere::intersect(Ray& r, double* color, int recLevel)
 {
@@ -237,11 +352,12 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
 
 //    cout<<a<<" "<<b<<" "<<c<<endl;
 
-    double d = sqrt(b*b-4*a*c); // discriminant
+    double d = (b*b-4*a*c); // discriminant
     if(d < 0)
     {
         return -5;
     }
+    d = sqrt(d); // root over (b square - 4 a c)
 
     double t1 = (-b + d) / (2 * a);
     double t2 = (-b - d) / (2 * a);
@@ -252,20 +368,58 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
     {
         return -5;
     }
+    // 0.752674 0.456943 -0.21253
+    double ambient = this->coEfficients[0];
+    color[0] = this->color[0] * ambient;
+    color[1] = this->color[1] * ambient;
+    color[2] = this->color[2] * ambient;
+
 
     if(t1>=0 && t2>=0)
     {
-        return min(t1,t2); // we might need to incorporate near distance here later
+        if(t1>t2)
+        {
+            double t3 = t2;
+            t2 = t1;
+            t1 = t3;
+        }
+
+        if(recLevel==0)
+        {
+            return t1;
+        }
+        else if(recLevel==1)
+        {
+            getPhongLighting(r,t1,color);
+            return t1;
+        }
     }
 
     // only 1 case left ... one of t1,t2 is positive
     if(t1>=0)
     {
-        return t1;
+        if(recLevel==0)
+        {
+            return t1;
+        }
+        else if(recLevel==1)
+        {
+            getPhongLighting(r,t1,color);
+            return t1;
+        }
+
     }
     else
     {
-        return t2;
+        if(recLevel==0)
+        {
+            return t2;
+        }
+        else if(recLevel==1)
+        {
+            getPhongLighting(r,t2,color);
+            return t2;
+        }
     }
 
 
@@ -493,11 +647,12 @@ double General::intersect(Ray& r, double* color, int recLevel)
                D*ro.x*ro.y + E*ro.x*ro.z + F*ro.y*ro.z +
                G*ro.x + H*ro.y + I*ro.z + J;
 
-    double d = sqrt(b*b-4*a*c); // discriminant
+    double d = (b*b-4*a*c); // discriminant
     if(d < 0)
     {
         return -5;
     }
+    d = sqrt(d);
 
     double t1 = (-b + d) / (2 * a);
     double t2 = (-b - d) / (2 * a);
@@ -736,6 +891,55 @@ Ray::Ray(Vector3D &eye, Vector3D &pixel)
 //    cout<<start.x<<" "<<start.y<<" "<<start.z<<endl;
 //    cout<<dir.x<<" "<<dir.y<<" "<<dir.z<<endl;
 
+}
+
+void Light::draw()
+{
+    struct point points[100][100];
+	int i,j;
+	double h,r;
+	int stacks = 50;
+	int slices = 50;
+	double radius = 2;
+	Vector3D reference_point = this->lightPos;
+
+
+	//generate points
+	for(i=0;i<=stacks;i++)
+	{
+		h=radius*sin(((double)i/(double)stacks)*(pi/2));
+		r=radius*cos(((double)i/(double)stacks)*(pi/2));
+		for(j=0;j<=slices;j++)
+		{
+			points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
+			points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+			points[i][j].z=h;
+		}
+	}
+	//draw quads using generated points
+	glTranslatef(reference_point.x,reference_point.y,reference_point.z);
+	glColor3f(color[0], color[1], color[2]);
+	for(i=0;i<stacks;i++)
+	{
+//        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
+		for(j=0;j<slices;j++)
+		{
+			glBegin(GL_QUADS);{
+			    //upper hemisphere
+				glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+				glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+				glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                //lower hemisphere
+                glVertex3f(points[i][j].x,points[i][j].y,-points[i][j].z);
+				glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
+				glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
+				glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
+			}glEnd();
+		}
+	}
+	glColor3f(1.0, 1.0, 1.0);
+	glTranslatef(-reference_point.x,-reference_point.y,-reference_point.z);
 }
 
 void printSphere(Sphere *s)

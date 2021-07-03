@@ -13,7 +13,7 @@ using namespace std;
 
 vector <Object*> objects;
 vector <Light*> lights;
-
+double globalColor[3];
 
 double cameraHeight;
 double cameraAngle;
@@ -492,6 +492,11 @@ void display(){
         }
 
     }
+
+    for(int i=0;i<lights.size();i++)
+    {
+        lights[i]->draw();
+    }
 //    objects[3]->draw();
 //    objects[0]->draw();
 //    objects[objects.size()-1]->draw();
@@ -522,29 +527,45 @@ double viewAngle = 80; // in degrees used in init and capture
 
 void init(){
 	//codes for initialization
-//	drawgrid=0;
-//	drawaxes=1;
-//	cameraHeight=150.0;
-//	cameraAngle=1.0;
-//	angle=0;
-    u = {0,1,0};
-    r = {1,0,0};
-    l = {0,0,-1};
 
-//    u = {0,1,0};
-//    l = {0.984,0,-0.174};
-//    r = {0.174,0,0.985};
-
-//    printPoint(l);
-//    printf("%d %d %d",1,1,2);
-    pos = {0,0,100};
-//    pos = {40.46,44,31.2176};
     drawaxes = 1;
     shiftingAmount = 5;
     rotationAmount = (pi/18);
     xAmount = 0;
     yAmount = 0;
     zAmount = 0;
+
+//
+//    pos = {100,100,0};
+//    u = {0,0,1};
+//    r = {-1/sqrt(2),1/sqrt(2),0};
+//    l = {-1/sqrt(2),-1/sqrt(2),0};
+
+//
+    pos = {30.1729,1.46954,6};
+    u = {0,0,1};
+    r = {-0.258819,-0.965926,0};
+    l = {0.965926,-0.258819,0};
+//capturing
+
+
+//capturing
+//du: 1 dv: 1 dist: 297.938
+//width: 500 height: 500 dimension: 500
+//eye:
+//30.1729 1.46954 6
+//look:
+//0.965926 -0.258819 0
+//up:
+//0 0 1
+//right:
+//-0.258819 -0.965926 0
+//topLeft:
+//382.535 165.356 255.5
+//0
+//after phong: 0 0 0
+//capture completed
+
 
 
 
@@ -576,6 +597,11 @@ double windowWidth = 500; // used in main and in capture function
 
 void capture()
 {
+    globalColor[0] = 0;
+    globalColor[1] = 0;
+    globalColor[2] = 0;
+
+    levelOfRecursion = 1;
     dimension = 500;
     bitmap_image image(dimension,dimension);
     cout<<"capturing"<<endl;
@@ -596,8 +622,8 @@ void capture()
     cout<<"width: "<<windowWidth<<" height: "<<windowHeight<<" dimension: "<<dimension<<endl;
     cout<<"eye:"<<endl;
     printPoint(pos);
-//    cout<<"look:"<<endl;
-//    printPoint(l);
+    cout<<"look:"<<endl;
+    printPoint(l);
     cout<<"up:"<<endl;
     printPoint(u);
     cout<<"right:"<<endl;
@@ -642,23 +668,24 @@ void capture()
 //                    break;
 //                }
                 Object *curObj = objects[k];
-                if(true)
+                if(curObj->type == sphere)
                 {
+                    if(i==250 && j == 350)
+                    {
+                        cout<<curObj->type<<endl;
+                    }
                     double t = curObj->intersect(r,color,levelOfRecursion);
                     if(t>=0)
                     {
                         if(tmin>t)
                         {
-//                            if(i==250 && j == 350)
-//                            {
-//                                cout<<curObj->type<<endl;
-//                            }
+
                             tmin = min(tmin,t);
                             if(curObj->type != board)
                             {
-                                minColor[0] = curObj->color[0];
-                                minColor[1] = curObj->color[1];
-                                minColor[2] = curObj->color[2];
+                                minColor[0] = color[0];
+                                minColor[1] = color[1];
+                                minColor[2] = color[2];
                             }
                             else
                             {
@@ -672,6 +699,7 @@ void capture()
                         }
 
                     }
+//                    break;
 
                 }
 
@@ -686,15 +714,16 @@ void capture()
 
                 image.set_pixel(j,i,minColor[0]*255,minColor[1]*255,minColor[2]*255);
             }
-            else
-            {
-                image.set_pixel(j,i,255,255,255);
-            }
-
+//            else
+//            {
+//                image.set_pixel(j,i,255,255,255);
+//            }
+            delete[] minColor;
             delete[] color;
 
         }
     }
+    cout<<"after phong: "<<globalColor[0]<< " " << globalColor[1] << " " << globalColor[2]<<endl;
     image.save_image("test.bmp");
     cout<<"capture completed"<<endl;
 
@@ -743,6 +772,7 @@ void testData()
 
 void loadData()
 {
+    cout<<"kill meh"<<endl;
     string file1 = "scene.txt";
     ifstream inputFile(file1);
 
