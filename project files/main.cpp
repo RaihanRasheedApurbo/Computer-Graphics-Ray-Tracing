@@ -667,7 +667,7 @@ void capture()
 //                    break;
 //                }
                 Object *curObj = objects[k];
-                if(true)
+                if(curObj->type == plane)
                 {
 //                    if(i==250 && j == 350)
 //                    {
