@@ -601,7 +601,7 @@ void capture()
     globalColor[1] = 0;
     globalColor[2] = 0;
 
-    levelOfRecursion = 1;
+    levelOfRecursion = 5;
     dimension = 500;
     bitmap_image image(dimension,dimension);
     cout<<"capturing"<<endl;
@@ -642,8 +642,8 @@ void capture()
             curPixel.z = topLeft.z - i*dv*u.z + j*du*r.z;
 
             Ray r(pos,curPixel);
-            double *color = new double[3];
-            double *minColor = new double[3];
+
+
 //            if(i%256==0 && j%256==0)
 //            {
 //                cout<<i<<" "<<j<<endl;
@@ -653,14 +653,13 @@ void capture()
 //            {
 //                cout<<"kill meh"<<endl;
 //            }
+
+            double *color = new double[3];
             color[0] = 0;
             color[1] = 0;
             color[2] = 0;
-            minColor[0] = 0;
-            minColor[1] = 0;
-            minColor[2] = 0;
-
             double tmin = INT_MAX;
+            Object *minObject = 0;
             for(int k=0;k<objects.size();k++)
             {
 //                if(k>=1)
@@ -674,27 +673,28 @@ void capture()
 //                    {
 //                        cout<<curObj->type<<endl;
 //                    }
-                    double t = curObj->intersect(r,color,levelOfRecursion);
+                    double t = curObj->intersect(r,color,0);
                     if(t>=0)
                     {
                         if(tmin>t)
                         {
 
                             tmin = min(tmin,t);
-                            if(false)
-//                            if(curObj->type != sphere && curObj->type != board )
-                            {
-                                minColor[0] = curObj->color[0];
-                                minColor[1] = curObj->color[1];
-                                minColor[2] = curObj->color[2];
-                            }
-                            else
-                            {
-                                minColor[0] = color[0];
-                                minColor[1] = color[1];
-                                minColor[2] = color[2];
-//                                cout<<color[0]<<" "<<color[1]<<" "<<color[2]<<endl;
-                            }
+//                            if(false)
+////                            if(curObj->type != sphere && curObj->type != board )
+//                            {
+//                                minColor[0] = curObj->color[0];
+//                                minColor[1] = curObj->color[1];
+//                                minColor[2] = curObj->color[2];
+//                            }
+//                            else
+//                            {
+//                                minColor[0] = color[0];
+//                                minColor[1] = color[1];
+//                                minColor[2] = color[2];
+////                                cout<<color[0]<<" "<<color[1]<<" "<<color[2]<<endl;
+//                            }
+                            minObject = curObj;
 
 
                         }
@@ -705,13 +705,19 @@ void capture()
                 }
 
             }
-            if(tmin!=INT_MAX)
+            if(tmin!=INT_MAX && minObject != 0)
             {
 //                if(i==250 && j == 350)
 //                {
 //                    cout<<i<<" "<<j<<" "<<tmin<<endl;
 //
 //                }
+                double *minColor = new double[3];
+                minColor[0] = 0;
+                minColor[1] = 0;
+                minColor[2] = 0;
+
+                minObject->intersect(r,minColor,1);
 
                 image.set_pixel(j,i,minColor[0]*255,minColor[1]*255,minColor[2]*255);
                 double t1 = minColor[0], t2 = minColor[1], t3 = minColor[2];
@@ -719,13 +725,15 @@ void capture()
                 {
                     cout<<"hello"<<endl;
                 }
+                delete[] minColor;
             }
+            delete[] color;
 //            else
 //            {
 //                image.set_pixel(j,i,255,255,255);
 //            }
-            delete[] minColor;
-            delete[] color;
+
+
 
         }
     }
