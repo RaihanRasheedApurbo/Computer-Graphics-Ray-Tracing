@@ -13,7 +13,7 @@ using namespace std;
 
 vector <Object*> objects;
 vector <Light*> lights;
-double globalColor[3];
+
 
 double cameraHeight;
 double cameraAngle;
@@ -597,12 +597,9 @@ double windowWidth = 500; // used in main and in capture function
 
 void capture()
 {
-    globalColor[0] = 0;
-    globalColor[1] = 0;
-    globalColor[2] = 0;
 
-    levelOfRecursion = 5;
-    dimension = 750;
+
+
     bitmap_image image(dimension,dimension);
     cout<<"capturing"<<endl;
 //    cout<<tan(pi*viewAngle/180/2)<<" "<<(windowHeight/2.0)<<endl;
@@ -680,19 +677,7 @@ void capture()
                         {
 
                             tmin = min(tmin,t);
-//                            if(false)
-////                            if(curObj->type != sphere && curObj->type != board )
-//                            {
-//                                minColor[0] = curObj->color[0];
-//                                minColor[1] = curObj->color[1];
-//                                minColor[2] = curObj->color[2];
-//                            }
-//                            else
-//                            {
-//                                minColor[0] = color[0];
-//                                minColor[1] = color[1];
-//                                minColor[2] = color[2];
-////                                cout<<color[0]<<" "<<color[1]<<" "<<color[2]<<endl;
+//
 //                            }
                             minObject = curObj;
 
@@ -720,11 +705,11 @@ void capture()
                 minObject->intersect(r,minColor,1);
 
                 image.set_pixel(j,i,minColor[0]*255,minColor[1]*255,minColor[2]*255);
-                double t1 = minColor[0], t2 = minColor[1], t3 = minColor[2];
-                if(t1+t2+t3 ==100)
-                {
-                    cout<<"hello"<<endl;
-                }
+//                double t1 = minColor[0], t2 = minColor[1], t3 = minColor[2];
+//                if(t1+t2+t3 ==100)
+//                {
+//                    cout<<"hello"<<endl;
+//                }
                 delete[] minColor;
             }
             delete[] color;
@@ -737,7 +722,7 @@ void capture()
 
         }
     }
-    cout<<"after phong: "<<globalColor[0]<< " " << globalColor[1] << " " << globalColor[2]<<endl;
+
     image.save_image("test.bmp");
     cout<<"capture completed"<<endl;
 
@@ -786,7 +771,7 @@ void testData()
 
 void loadData()
 {
-    cout<<"kill meh"<<endl;
+//    cout<<"kill meh"<<endl;
     string file1 = "scene.txt";
     ifstream inputFile(file1);
 
@@ -864,7 +849,7 @@ int main(int argc, char **argv){
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 
-	glutCreateWindow("My OpenGL Program");
+	glutCreateWindow("Ray Tracing Project");
 
 	init();
 

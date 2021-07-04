@@ -34,9 +34,6 @@ public:
     int shine; // exponent term of specular component
     virtual void draw();
     virtual double intersect(Ray &r, double* color, int recLevel);
-    void setColor();
-    void setShine();
-    void setCoEfficients();
     Object();
     virtual ~Object();
     void getPhongLighting(Ray &r, double t, double* color);
@@ -66,7 +63,6 @@ public:
 //    Sphere(center, radius);
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
-    void getPointNormalForm(Vector3D &n, Vector3D &po);
     bool insideTriangle(Vector3D &intersection);
     Vector3D getNormal(Vector3D &intersectPoint);
 
@@ -82,6 +78,7 @@ public:
     double intersect(Ray &r, double* color, int recLevel);
     bool insideGeneral(Vector3D &p);
     Vector3D getNormal(Vector3D &intersectPoint);
+//    void getPhongLighting(Ray &r, double t, double* color);
 
 };
 
@@ -116,7 +113,6 @@ public:
 
 extern vector <Object*> objects;
 extern vector <Light*> lights;
-extern double globalColor[3];
 extern int levelOfRecursion;
 
 
@@ -141,25 +137,11 @@ void Object::draw()
     cout<<"drawing Object"<<endl;
 }
 
-void Object::setColor()
-{
 
-}
-
-void Object::setCoEfficients()
-{
-
-}
-
-void Object::setShine()
-{
-
-
-}
 
 double Object::intersect(Ray& r, double* color, int recLevel)
 {
-    return 0;
+    return -5;
 }
 
 Vector3D Object::getNormal(Vector3D &intersectPoint)
@@ -182,8 +164,8 @@ void Object::getPhongLighting(Ray &r, double t, double* color)
         if(true)
         {
             Light *curLight = lights[i];
-            Light &tk = *(lights[i]);
-            Object &tkk = *(this);
+//            Light &tk = *(lights[i]);
+//            Object &tkk = *(this);
             Ray rl(intersectionPoint,curLight->lightPos);
             rl.start = {intersectionPoint.x + epsilon*rl.dir.x, intersectionPoint.y + epsilon*rl.dir.y, intersectionPoint.z + epsilon*rl.dir.z};
 //            double lightT = (curLight->lightPos.x-rl.start.x)/rl.dir.x; //    Rox + t * Rdirl = light.x
@@ -213,7 +195,7 @@ void Object::getPhongLighting(Ray &r, double t, double* color)
                 double lambertValue = rl.dir.x * normalAtIntersect.x +
                 rl.dir.y * normalAtIntersect.y + rl.dir.z * normalAtIntersect.z ;
                 double diffuseCo = this->coEfficients[1];
-                lambertValue = abs(lambertValue);
+//                lambertValue = abs(lambertValue);
                 if(true)
                 {
                     color[0] += curLight->color[0]*diffuseCo*lambertValue*this->color[0];
@@ -221,10 +203,10 @@ void Object::getPhongLighting(Ray &r, double t, double* color)
                     color[2] += curLight->color[2]*diffuseCo*lambertValue*this->color[2];
                 }
                 double z1 = color[0], z2 = color[1], z3 = color[2];
-                if(z1+z2+z3 ==100)
-                {
-                    cout<<"hello"<<endl;
-                }
+//                if(z1+z2+z3 ==100)
+//                {
+//                    cout<<"hello"<<endl;
+//                }
                 double dDotN = lambertValue;
 //                d-2(d*n)n
                 Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
@@ -233,7 +215,7 @@ void Object::getPhongLighting(Ray &r, double t, double* color)
                 double phongValue = incidentRay.x * r.dir.x +
                 incidentRay.y * r.dir.y + incidentRay.z * r.dir.z;
                 double phongConst = pow(phongValue,this->shine);
-                phongConst = abs(phongConst);
+//                phongConst = abs(phongConst);
                 double specularCo = this->coEfficients[2];
     //            if(phongConst <0 || lambertValue < 0)
     //            {
@@ -247,10 +229,10 @@ void Object::getPhongLighting(Ray &r, double t, double* color)
                 }
 
                 double t1 = color[0], t2 = color[1], t3 = color[2];
-                if(t1+t2+t3 ==100)
-                {
-                    cout<<"hello"<<endl;
-                }
+//                if(t1+t2+t3 ==100)
+//                {
+//                    cout<<"hello"<<endl;
+//                }
 
             }
 
@@ -525,11 +507,11 @@ double Sphere::intersect(Ray& r, double* color, int recLevel)
         minObject->intersect(r,colorReflected,recLevel+1);
 
 
-        double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
-        if(z1+z2+z3 ==100)
-        {
-            cout<<"hello"<<endl;
-        }
+//        double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+//        if(z1+z2+z3 ==100)
+//        {
+//            cout<<"hello"<<endl;
+//        }
 
         double recReflectionCoEff = this->coEfficients[3];
 
@@ -572,39 +554,6 @@ void Triangle::draw()
     glColor3f(1.0, 1.0, 1.0);
 }
 
-void Triangle::getPointNormalForm(Vector3D &n, Vector3D &po)
-{
-    // let three points of the triangle is a,b,c
-    Vector3D ba = {(p1.x-p2.x),(p1.y-p2.y),(p1.z-p2.z)}; // ba = a-b
-    Vector3D bc = {(p3.x-p2.x),(p3.y-p2.y),(p3.z-p2.z)}; // bc = c-b
-
-    Vector3D normal = {ba.y*bc.z-ba.z*bc.y,ba.z*bc.x-ba.x*bc.z,ba.x*bc.y-bc.x*ba.y};
-    normal.x = -normal.x;
-    normal.y = -normal.y;
-    normal.z = -normal.z;
-    double magnitude = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
-
-    normal.x = normal.x/magnitude;
-    if(abs(normal.x)<PRECISION_FIX)
-    {
-        normal.x = 0;
-    }
-    normal.y = normal.y/magnitude;
-    if(abs(normal.y)<PRECISION_FIX)
-    {
-        normal.y = 0;
-    }
-    normal.z = normal.z/magnitude;
-    if(abs(normal.z)<PRECISION_FIX)
-    {
-        normal.z = 0;
-    }
-    n = normal;
-    po = p2;
-
-    return;
-
-}
 
 bool Triangle::insideTriangle(Vector3D &intersection)
 {
@@ -637,40 +586,7 @@ bool Triangle::insideTriangle(Vector3D &intersection)
     return false;
 }
 
-//double Triangle::intersect(Ray& r, double* color, int recLevel)
-//{
-//    Vector3D n,ro,rd,po,p;
-//    this->getPointNormalForm(n,po);
-//    ro = r.start;
-//    rd = r.dir;
-//
-//    double d = n.x*rd.x + n.y*rd.y + n.z*rd.z;
-//
-//    if(d==0) // plane and ray is parallel hence no intersection
-//    {
-//        return -10;
-//    }
-//
-//    double t = - (n.x*(ro.x-po.x)+n.y*(ro.y-po.y)+n.z*(ro.z-po.z)) / d;
-//
-//    if(t<0)
-//    {
-//        return -5;
-//    }
-//    // now we have to check whether the intersection point is inside the triangle
-//    Vector3D intersctionPoint = {ro.x+t*rd.x,ro.y+t*rd.y,ro.z+t*rd.z};
-////    printPoint(intersctionPoint);
-//    if(insideTriangle(intersctionPoint))
-//    {
-//        return t;
-//    }
-//    else
-//    {
-//        return -20;
-//    }
-//
-//    return -15;
-//}
+
 
 double determinantSolver3by3(double *a, double *b, double *c)
 {
@@ -806,11 +722,11 @@ double Triangle::intersect(Ray& r, double* color, int recLevel)
             minObject->intersect(r,colorReflected,recLevel+1);
 
 
-            double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
-            if(z1+z2+z3 ==100)
-            {
-                cout<<"hello"<<endl;
-            }
+//            double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+//            if(z1+z2+z3 ==100)
+//            {
+//                cout<<"hello"<<endl;
+//            }
 
             double recReflectionCoEff = this->coEfficients[3];
 
@@ -907,6 +823,9 @@ Vector3D General::getNormal(Vector3D &ip)
 
 
 }
+
+
+
 double General::intersect(Ray& r, double* color, int recLevel)
 {
     Vector3D rd,ro;
@@ -970,9 +889,7 @@ double General::intersect(Ray& r, double* color, int recLevel)
 
 
     }
-
-    // only 1 case left ... one of t1,t2 is positive
-    if(t1>=0)
+    else if(t1>=0)// only 1 case left ... one of t1,t2 is positive
     {
         Vector3D i1 = {ro.x+t1*rd.x,ro.y+t1*rd.y,ro.z+t1*rd.z};
         if(insideGeneral(i1))
@@ -1011,7 +928,8 @@ double General::intersect(Ray& r, double* color, int recLevel)
     color[1] = this->color[1] * ambient;
     color[2] = this->color[2] * ambient;
 
-    getPhongLighting(r,t,color);
+
+//    getPhongLighting(r,t,color);
     int lor = levelOfRecursion;
     if(recLevel>=lor)
     {
@@ -1073,11 +991,11 @@ double General::intersect(Ray& r, double* color, int recLevel)
         minObject->intersect(r,colorReflected,recLevel+1);
 
 
-        double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
-        if(z1+z2+z3 ==100)
-        {
-            cout<<"hello"<<endl;
-        }
+//        double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+//        if(z1+z2+z3 ==100)
+//        {
+//            cout<<"hello"<<endl;
+//        }
 
         double recReflectionCoEff = this->coEfficients[3];
 
@@ -1257,11 +1175,11 @@ void Floor::getPhongLighting(Ray &r, double t, double* color, bool color1Chosen)
                     color[1] += curLight->color[1]*diffuseCo*lambertValue*c2;
                     color[2] += curLight->color[2]*diffuseCo*lambertValue*c3;
                 }
-                double z1 = color[0], z2 = color[1], z3 = color[2];
-                if(z1+z2+z3 ==100)
-                {
-                    cout<<"hello"<<endl;
-                }
+//                double z1 = color[0], z2 = color[1], z3 = color[2];
+//                if(z1+z2+z3 ==100)
+//                {
+//                    cout<<"hello"<<endl;
+//                }
                 double dDotN = lambertValue;
 //                d-2(d*n)n
                 Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
@@ -1283,11 +1201,11 @@ void Floor::getPhongLighting(Ray &r, double t, double* color, bool color1Chosen)
                     color[2] += curLight->color[2]*specularCo*phongConst*c3;
                 }
 
-                double t1 = color[0], t2 = color[1], t3 = color[2];
-                if(t1+t2+t3 ==100)
-                {
-                    cout<<"hello"<<endl;
-                }
+//                double t1 = color[0], t2 = color[1], t3 = color[2];
+//                if(t1+t2+t3 ==100)
+//                {
+//                    cout<<"hello"<<endl;
+//                }
 
             }
 
@@ -1456,11 +1374,11 @@ double Floor::intersect(Ray& r, double* color, int recLevel)
             minObject->intersect(r,colorReflected,recLevel+1);
 
 
-            double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
-            if(z1+z2+z3 ==100)
-            {
-                cout<<"hello"<<endl;
-            }
+//            double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+//            if(z1+z2+z3 ==100)
+//            {
+//                cout<<"hello"<<endl;
+//            }
 
             double recReflectionCoEff = this->coEfficients[3];
 
