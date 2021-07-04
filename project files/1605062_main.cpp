@@ -849,7 +849,7 @@ int main(int argc, char **argv){
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 
-	glutCreateWindow("My OpenGL Program");
+	glutCreateWindow("Ray Tracing Project");
 
 	init();
 

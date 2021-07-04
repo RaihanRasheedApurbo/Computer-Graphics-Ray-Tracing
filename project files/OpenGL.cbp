@@ -58,11 +58,8 @@
 			<Add after="xcopy /y OpenGL\DLL\glut32.dll $TARGET_OUTPUT_DIR" />
 		</ExtraCommands>
 		<Unit filename="1605062_ObjectClasses.h" />
-		<Unit filename="include/1605062_Object.h" />
-		<Unit filename="main.cpp" />
-		<Unit filename="src/1605062_Object.cpp" />
-		<Unit filename="test.cpp" />
-		<Unit filename="test.h" />
+		<Unit filename="1605062_main.cpp" />
+		<Unit filename="bitmap_image.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
