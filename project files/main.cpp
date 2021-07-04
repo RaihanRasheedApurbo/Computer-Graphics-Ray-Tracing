@@ -602,7 +602,7 @@ void capture()
     globalColor[2] = 0;
 
     levelOfRecursion = 5;
-    dimension = 500;
+    dimension = 750;
     bitmap_image image(dimension,dimension);
     cout<<"capturing"<<endl;
 //    cout<<tan(pi*viewAngle/180/2)<<" "<<(windowHeight/2.0)<<endl;

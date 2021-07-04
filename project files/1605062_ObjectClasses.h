@@ -943,10 +943,7 @@ double General::intersect(Ray& r, double* color, int recLevel)
         return -5;
     }
 
-    double ambient = this->coEfficients[0];
-    color[0] = this->color[0] * ambient;
-    color[1] = this->color[1] * ambient;
-    color[2] = this->color[2] * ambient;
+    double t;
 
     if(t1>=0 && t2>=0)
     {
@@ -960,23 +957,17 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
         if(insideGeneral(i1))
         {
-            if(recLevel >= 1)
-            {
-                getPhongLighting(r,t1,color);
-            }
-
-            return t1;
+            t = t1;
         }
-        if(insideGeneral(i2))
+        else if(insideGeneral(i2))
         {
-            if(recLevel >= 1)
-            {
-                getPhongLighting(r,t2,color);
-            }
-
-            return t2;
+            t = t2;
         }
-        return -10;
+        else
+        {
+            return -10;
+        }
+
 
     }
 
@@ -986,14 +977,13 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i1 = {ro.x+t1*rd.x,ro.y+t1*rd.y,ro.z+t1*rd.z};
         if(insideGeneral(i1))
         {
-            if(recLevel>=1)
-            {
-                getPhongLighting(r,t1,color);
-            }
-
-            return t1;
+            t = t1;
         }
-        return -15;
+        else
+        {
+             return -15;
+        }
+
     }
     else
     {
@@ -1001,20 +991,114 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
         if(insideGeneral(i2))
         {
-            if(recLevel>=1)
-            {
-                getPhongLighting(r,t2,color);
-            }
-
-            return t2;
+           t = t2;
         }
-        return -20;
+        else
+        {
+            return -20;
+        }
+
+    }
+
+    if(recLevel == 0)
+    {
+        return t;
     }
 
 
+    double ambient = this->coEfficients[0];
+    color[0] = this->color[0] * ambient;
+    color[1] = this->color[1] * ambient;
+    color[2] = this->color[2] * ambient;
+
+    getPhongLighting(r,t,color);
+    int lor = levelOfRecursion;
+    if(recLevel>=lor)
+    {
+        return t;
+    }
+    Vector3D ip = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z}; // intersect point
+    Vector3D normal = getNormal(ip); //normal at intersection
+    double dDotN = r.dir.x*normal.x + r.dir.y*normal.y + r.dir.z*normal.z;
+    Vector3D reflectedRay = {r.dir.x - 2 * dDotN * normal.x,
+                             r.dir.y - 2 * dDotN * normal.y,
+                             r.dir.z - 2 * dDotN * normal.z};
+    double epsilon = 2 * 0.01;
+    Ray rReflected(ip,reflectedRay);
+    rReflected.dir = reflectedRay;
+    rReflected.start = {ip.x + epsilon*rReflected.dir.x, ip.y + epsilon*rReflected.dir.y, ip.z + epsilon*rReflected.dir.z};
+    double *dummyColor = new double[3];
+    dummyColor[0] = 0;
+    dummyColor[1] = 0;
+    dummyColor[2] = 0;
+
+    double tmin = INT_MAX;
+    Object *minObject = 0;
+    for(int i=0;i<objects.size();i++)
+    {
+//
+        Object *curObj = objects[i];
+        if(true)
+        {
+//
+            double tObj = curObj->intersect(rReflected,dummyColor,0);
+            if(tObj>0)
+            {
+                if(tmin>tObj)
+                {
+
+                    tmin = tObj;
+                    minObject = curObj;
 
 
-    return -100;
+                }
+
+            }
+//                    break;
+
+        }
+
+    }
+    if(tmin!=INT_MAX && minObject != 0)
+    {
+//                if(i==250 && j == 350)
+//                {
+//                    cout<<i<<" "<<j<<" "<<tmin<<endl;
+//
+//                }
+        double *colorReflected = new double[3];
+        colorReflected[0] = 0;
+        colorReflected[1] = 0;
+        colorReflected[2] = 0;
+        minObject->intersect(r,colorReflected,recLevel+1);
+
+
+        double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+        if(z1+z2+z3 ==100)
+        {
+            cout<<"hello"<<endl;
+        }
+
+        double recReflectionCoEff = this->coEfficients[3];
+
+        color[0] += colorReflected[0] * recReflectionCoEff;
+        color[1] += colorReflected[1] * recReflectionCoEff;
+        color[2] += colorReflected[2] * recReflectionCoEff;
+
+    }
+    return t;
+//            else
+//            {
+//                image.set_pixel(j,i,255,255,255);
+//            }
+
+    // this return will never get executed
+
+
+
+
+
+    return -100; // never gets called
 }
 
 Floor::Floor(double floorWidth, double tileWidth)
@@ -1250,7 +1334,7 @@ double Floor::intersect(Ray& r, double* color, int recLevel)
 //    printPoint(intersctionPoint);
     if(insideFloor(intersctionPoint))
     {
-        double ambient = this->coEfficients[0];
+
         int colDist = floor(abs(reference_point.x - intersctionPoint.x) / tileLength);
         int rowDist = floor(abs(reference_point.y - intersctionPoint.y) / tileLength);
 
@@ -1260,18 +1344,14 @@ double Floor::intersect(Ray& r, double* color, int recLevel)
             if(colDist%2==0)
             {
                 color1Chosen = true;
-                color[0] = color1[0]*ambient;
-                color[1] = color1[1]*ambient;
-                color[2] = color1[2]*ambient;
+
 
 
 //                cout<<color[0]<<endl;
             }
             else
             {
-                color[0] = color2[0]*ambient;
-                color[1] = color2[1]*ambient;
-                color[2] = color2[2]*ambient;
+
             }
         }
         else
@@ -1279,25 +1359,123 @@ double Floor::intersect(Ray& r, double* color, int recLevel)
             if(colDist%2!=0)
             {
                 color1Chosen = true;
-                color[0] = color1[0]*ambient;
-                color[1] = color1[1]*ambient;
-                color[2] = color1[2]*ambient;
+
             }
             else
             {
-                color[0] = color2[0]*ambient;
-                color[1] = color2[1]*ambient;
-                color[2] = color2[2]*ambient;
+
             }
         }
-        if(recLevel>=1)
+//
+//        if(recLevel>=1)
+//        {
+//            getPhongLighting(r,t,color,color1Chosen);
+//        }
+//
+//
+//        return t;
+        if(recLevel == 0)
         {
-            getPhongLighting(r,t,color,color1Chosen);
+            return t;
+        }
+
+        double ambient = this->coEfficients[0];
+        if(color1Chosen)
+        {
+            color[0] = this->color1[0] * ambient;
+            color[1] = this->color1[1] * ambient;
+            color[2] = this->color1[2] * ambient;
+        }
+        else
+        {
+            color[0] = this->color2[0] * ambient;
+            color[1] = this->color2[1] * ambient;
+            color[2] = this->color2[2] * ambient;
         }
 
 
-        return t;
+        getPhongLighting(r,t,color,color1Chosen);
+        int lor = levelOfRecursion;
+        if(recLevel>=lor)
+        {
+            return t;
+        }
+        Vector3D ip = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z}; // intersect point
+        Vector3D normal = getNormal(ip); //normal at intersection
+        double dDotN = r.dir.x*normal.x + r.dir.y*normal.y + r.dir.z*normal.z;
+        Vector3D reflectedRay = {r.dir.x - 2 * dDotN * normal.x,
+                                 r.dir.y - 2 * dDotN * normal.y,
+                                 r.dir.z - 2 * dDotN * normal.z};
+        double epsilon = 2 * 0.01;
+        Ray rReflected(ip,reflectedRay);
+        rReflected.dir = reflectedRay; // have to set manually
+        rReflected.start = {ip.x + epsilon*rReflected.dir.x, ip.y + epsilon*rReflected.dir.y, ip.z + epsilon*rReflected.dir.z};
+        double *dummyColor = new double[3];
+        dummyColor[0] = 0;
+        dummyColor[1] = 0;
+        dummyColor[2] = 0;
 
+        double tmin = INT_MAX;
+        Object *minObject = 0;
+        for(int i=0;i<objects.size();i++)
+        {
+    //
+            Object *curObj = objects[i];
+            if(true)
+            {
+    //
+                double tObj = curObj->intersect(rReflected,dummyColor,0);
+                if(tObj>0)
+                {
+                    if(tmin>tObj)
+                    {
+
+                        tmin = tObj;
+                        minObject = curObj;
+
+
+                    }
+
+                }
+    //                    break;
+
+            }
+
+        }
+        if(tmin!=INT_MAX && minObject != 0)
+        {
+    //                if(i==250 && j == 350)
+    //                {
+    //                    cout<<i<<" "<<j<<" "<<tmin<<endl;
+    //
+    //                }
+            double *colorReflected = new double[3];
+            colorReflected[0] = 0;
+            colorReflected[1] = 0;
+            colorReflected[2] = 0;
+            minObject->intersect(r,colorReflected,recLevel+1);
+
+
+            double z1 = colorReflected[0], z2 = colorReflected[1], z3 = colorReflected[2];
+            if(z1+z2+z3 ==100)
+            {
+                cout<<"hello"<<endl;
+            }
+
+            double recReflectionCoEff = this->coEfficients[3];
+
+            color[0] += colorReflected[0] * recReflectionCoEff;
+            color[1] += colorReflected[1] * recReflectionCoEff;
+            color[2] += colorReflected[2] * recReflectionCoEff;
+
+        }
+    //            else
+    //            {
+    //                image.set_pixel(j,i,255,255,255);
+    //            }
+
+        // this return will never get executed
+        return t;
     }
 
 
