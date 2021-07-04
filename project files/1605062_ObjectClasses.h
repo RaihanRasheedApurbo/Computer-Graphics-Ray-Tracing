@@ -39,7 +39,8 @@ public:
     void setCoEfficients();
     Object();
     virtual ~Object();
-
+    void getPhongLighting(Ray &r, double t, double* color);
+    virtual Vector3D getNormal(Vector3D &intersectPoint);
 protected:
 
 private:
@@ -53,7 +54,7 @@ public:
 //    Sphere(center, radius);
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
-    void getPhongLighting(Ray &r, double t, double* color);
+//    void getPhongLighting(Ray &r, double t, double* color);
     Vector3D getNormal(Vector3D &intersectPoint);
 
 };
@@ -67,6 +68,7 @@ public:
     double intersect(Ray &r, double* color, int recLevel);
     void getPointNormalForm(Vector3D &n, Vector3D &po);
     bool insideTriangle(Vector3D &intersection);
+    Vector3D getNormal(Vector3D &intersectPoint);
 
 };
 
@@ -79,6 +81,7 @@ public:
     void draw();
     double intersect(Ray &r, double* color, int recLevel);
     bool insideGeneral(Vector3D &p);
+    Vector3D getNormal(Vector3D &intersectPoint);
 
 };
 
@@ -89,11 +92,14 @@ public:
     double width;
     Vector3D normal {0,0,1};
     double color1[3] = {1.0,1.0,1.0};
-    double color2[3] = {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
+//    double color2[3] = {0.874, 0.455, 0.318}; //burnt sienna rgb(233,116,81)
+    double color2[3] = {0, 0, 0};
     Floor(double floorWidth = 1000, double tileWidth = 20);
     bool insideFloor(Vector3D &intersect);
     double intersect(Ray &r, double* color, int recLevel);
     void draw();
+    Vector3D getNormal(Vector3D &intersectPoint);
+    void getPhongLighting(Ray &r, double t, double* color, bool color1Chosen);
 };
 
 
@@ -153,6 +159,116 @@ void Object::setShine()
 double Object::intersect(Ray& r, double* color, int recLevel)
 {
     return 0;
+}
+
+Vector3D Object::getNormal(Vector3D &intersectPoint)
+{
+    cout<<"shouldn't get called"<<endl;
+    Vector3D ret;
+    return ret;
+}
+
+void Object::getPhongLighting(Ray &r, double t, double* color)
+{
+    Vector3D intersectionPoint = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z};
+    Vector3D normalAtIntersect = getNormal(intersectionPoint);
+    // adding epsilon to elevate intersection point...
+    double epsilon = 2*0.01;
+
+//    cout<<"before phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    for(int i=0;i<lights.size();i++)
+    {
+        if(true)
+        {
+            Light *curLight = lights[i];
+            Light &tk = *(lights[i]);
+            Object &tkk = *(this);
+            Ray rl(intersectionPoint,curLight->lightPos);
+            rl.start = {intersectionPoint.x + epsilon*rl.dir.x, intersectionPoint.y + epsilon*rl.dir.y, intersectionPoint.z + epsilon*rl.dir.z};
+//            double lightT = (curLight->lightPos.x-rl.start.x)/rl.dir.x; //    Rox + t * Rdirl = light.x
+            Vector3D distanceVec = {curLight->lightPos.x-intersectionPoint.x, curLight->lightPos.y-intersectionPoint.y, curLight->lightPos.z-intersectionPoint.z};
+            double lightT = sqrt(distanceVec.x*distanceVec.x + distanceVec.y*distanceVec.y + distanceVec.z*distanceVec.z);
+
+            double *dummyColor = new double[3];
+            bool obsecured = false;
+            for(int j=0;j<objects.size();j++)
+            {
+                double t = objects[j]->intersect(rl,dummyColor,0);
+                if(t>=0)
+                {
+                          if(lightT>t)
+                        {
+                            obsecured = true;
+                            break;
+                        }
+
+
+                }
+            }
+            delete[] dummyColor;
+            if(obsecured == false)
+            {
+
+                double lambertValue = rl.dir.x * normalAtIntersect.x +
+                rl.dir.y * normalAtIntersect.y + rl.dir.z * normalAtIntersect.z ;
+                double diffuseCo = this->coEfficients[1];
+                lambertValue = abs(lambertValue);
+                if(true)
+                {
+                    color[0] += curLight->color[0]*diffuseCo*lambertValue*this->color[0];
+                    color[1] += curLight->color[1]*diffuseCo*lambertValue*this->color[1];
+                    color[2] += curLight->color[2]*diffuseCo*lambertValue*this->color[2];
+                }
+                double z1 = color[0], z2 = color[1], z3 = color[2];
+                if(z1+z2+z3 ==100)
+                {
+                    cout<<"hello"<<endl;
+                }
+                double dDotN = lambertValue;
+//                d-2(d*n)n
+                Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
+                rl.dir.y-2*dDotN*normalAtIntersect.y, rl.dir.z-2*dDotN*normalAtIntersect.z};
+
+                double phongValue = incidentRay.x * r.dir.x +
+                incidentRay.y * r.dir.y + incidentRay.z * r.dir.z;
+                double phongConst = pow(phongValue,this->shine);
+                phongConst = abs(phongConst);
+                double specularCo = this->coEfficients[2];
+    //            if(phongConst <0 || lambertValue < 0)
+    //            {
+    //                cout<<" kill me"<<endl;
+    //            }
+                if(true)
+                {
+                    color[0] += curLight->color[0]*specularCo*phongConst*this->color[0];
+                    color[1] += curLight->color[1]*specularCo*phongConst*this->color[1];
+                    color[2] += curLight->color[2]*specularCo*phongConst*this->color[2];
+                }
+
+                double t1 = color[0], t2 = color[1], t3 = color[2];
+                if(t1+t2+t3 ==100)
+                {
+                    cout<<"hello"<<endl;
+                }
+
+            }
+
+
+
+
+        }
+    }
+//    cout<<color[0]+color[1]+color[2]<<endl;
+//    if(globalColor[0]+globalColor[1]+globalColor[2] < color[0]+color[1]+color[2])
+//    {
+//        cout<<"hi"<<endl;
+//        globalColor[0] = color[0];
+//        globalColor[1] = color[1];
+//        globalColor[2] = color[2];
+//
+//    }
+//    cout<<"after phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    return;
 }
 
 Sphere::Sphere()
@@ -245,95 +361,7 @@ Vector3D Sphere::getNormal(Vector3D &intersectPoint)
 
 
 
-void Sphere::getPhongLighting(Ray &r, double t, double* color)
-{
-    Vector3D intersectionPoint = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z};
-    Vector3D normalAtIntersect = getNormal(intersectionPoint);
-    // adding epsilon to elevate intersection point...
-    double epsilon = 2*0.01;
 
-//    cout<<"before phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
-    for(int i=0;i<lights.size();i++)
-    {
-        if(true)
-        {
-            Light *curLight = lights[i];
-            Ray rl(intersectionPoint,curLight->lightPos);
-            rl.start = {intersectionPoint.x + epsilon*rl.dir.x, intersectionPoint.y + epsilon*rl.dir.y, intersectionPoint.z + epsilon*rl.dir.z};
-//            double lightT = (curLight->lightPos.x-rl.start.x)/rl.dir.x; //    Rox + t * Rdirl = light.x
-            Vector3D distanceVec = {curLight->lightPos.x-intersectionPoint.x, curLight->lightPos.y-intersectionPoint.y, curLight->lightPos.z-intersectionPoint.z};
-            double lightT = sqrt(distanceVec.x*distanceVec.x + distanceVec.y*distanceVec.y + distanceVec.z*distanceVec.z);
-
-            double *dummyColor = new double[3];
-            bool obsecured = false;
-            for(int j=0;j<objects.size();j++)
-            {
-                double t = objects[j]->intersect(rl,dummyColor,0);
-                if(t>=0)
-                {
-                    if(t>25)
-                    {
-                            if(lightT>t)
-                        {
-                            obsecured = true;
-                            break;
-                        }
-                    }
-
-                }
-            }
-            delete[] dummyColor;
-            if(obsecured == false)
-            {
-
-                double lambertValue = rl.dir.x * normalAtIntersect.x +
-                rl.dir.y * normalAtIntersect.y + rl.dir.z * normalAtIntersect.z ;
-                double diffuseCo = this->coEfficients[1];
-                if(lambertValue>0)
-                {
-                    color[0] += curLight->color[0]*diffuseCo*lambertValue*this->color[0];
-                    color[1] += curLight->color[1]*diffuseCo*lambertValue*this->color[1];
-                    color[2] += curLight->color[2]*diffuseCo*lambertValue*this->color[2];
-                }
-
-                double dDotN = lambertValue;
-//                d-2(d*n)n
-                Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
-                rl.dir.y-2*dDotN*normalAtIntersect.y, rl.dir.z-2*dDotN*normalAtIntersect.z};
-
-                double phongValue = incidentRay.x * r.dir.x +
-                incidentRay.y * r.dir.y + incidentRay.z * r.dir.z;
-                double phongConst = pow(phongValue,this->shine);
-                double specularCo = this->coEfficients[2];
-    //            if(phongConst <0 || lambertValue < 0)
-    //            {
-    //                cout<<" kill me"<<endl;
-    //            }
-                if(phongValue>0)
-                {
-                    color[0] += curLight->color[0]*specularCo*phongConst*this->color[0];
-                    color[1] += curLight->color[1]*specularCo*phongConst*this->color[1];
-                    color[2] += curLight->color[2]*specularCo*phongConst*this->color[2];
-                }
-            }
-
-
-
-
-        }
-    }
-//    cout<<color[0]+color[1]+color[2]<<endl;
-//    if(globalColor[0]+globalColor[1]+globalColor[2] < color[0]+color[1]+color[2])
-//    {
-//        cout<<"hi"<<endl;
-//        globalColor[0] = color[0];
-//        globalColor[1] = color[1];
-//        globalColor[2] = color[2];
-//
-//    }
-//    cout<<"after phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
-    return;
-}
 
 double Sphere::intersect(Ray& r, double* color, int recLevel)
 {
@@ -460,6 +488,9 @@ void Triangle::getPointNormalForm(Vector3D &n, Vector3D &po)
     Vector3D bc = {(p3.x-p2.x),(p3.y-p2.y),(p3.z-p2.z)}; // bc = c-b
 
     Vector3D normal = {ba.y*bc.z-ba.z*bc.y,ba.z*bc.x-ba.x*bc.z,ba.x*bc.y-bc.x*ba.y};
+    normal.x = -normal.x;
+    normal.y = -normal.y;
+    normal.z = -normal.z;
     double magnitude = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
 
     normal.x = normal.x/magnitude;
@@ -557,6 +588,36 @@ double determinantSolver3by3(double *a, double *b, double *c)
           +c[0]*(a[1]*b[2]-a[2]*b[1]);
 }
 
+Vector3D Triangle::getNormal(Vector3D &intersectPoint)
+{
+    Vector3D ba = {(p1.x-p2.x),(p1.y-p2.y),(p1.z-p2.z)}; // ba = a-b
+    Vector3D bc = {(p3.x-p2.x),(p3.y-p2.y),(p3.z-p2.z)}; // bc = c-b
+
+    Vector3D normal = {ba.y*bc.z-ba.z*bc.y,ba.z*bc.x-ba.x*bc.z,ba.x*bc.y-bc.x*ba.y};
+    double magnitude = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
+    normal.x = -normal.x;
+    normal.y = -normal.y;
+    normal.z = -normal.z;   // axb = -bxa // I had done reference cross product so negating each component
+    normal.x = normal.x/magnitude;
+    if(abs(normal.x-0)<PRECISION_FIX)
+    {
+        normal.x = 0;
+    }
+    normal.y = normal.y/magnitude;
+    if(abs(normal.y-0)<PRECISION_FIX)
+    {
+        normal.y = 0;
+    }
+    normal.z = normal.z/magnitude;
+    if(abs(normal.z-0)<PRECISION_FIX)
+    {
+        normal.z = 0;
+    }
+
+
+    return normal;
+}
+
 double Triangle::intersect(Ray& r, double* color, int recLevel)
 {
 //    double a[3],b[3],c[3],s[3];
@@ -580,6 +641,16 @@ double Triangle::intersect(Ray& r, double* color, int recLevel)
 
     if(beta+gama<=1 && beta>0 && gama>0 and t>0)
     {
+
+        double ambient = this->coEfficients[0];
+        color[0] = this->color[0] * ambient;
+        color[1] = this->color[1] * ambient;
+        color[2] = this->color[2] * ambient;
+        if(recLevel==1)
+        {
+            getPhongLighting(r,t,color);
+        }
+
         return t;
     }
 
@@ -627,6 +698,41 @@ bool General::insideGeneral(Vector3D &p)
     return true;
 }
 
+Vector3D General::getNormal(Vector3D &ip)
+{
+    double A = constants[0], B = constants[1],  C = constants[2],
+     D = constants[3],  E = constants[4], F = constants[5], G = constants[6],
+      H = constants[7], I = constants[8], J = constants[9];
+    Vector3D normal{2*A*ip.x+D*ip.y+E*ip.z+G,
+                 2*B*ip.y+D*ip.x+F*ip.z+H,
+                 2*C*ip.z+E*ip.x+F*ip.y+I
+                };
+
+    double magnitude = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
+
+    normal.x = normal.x/magnitude;
+    if(abs(normal.x-0)<PRECISION_FIX)
+    {
+        normal.x = 0;
+    }
+    normal.y = normal.y/magnitude;
+    if(abs(normal.y-0)<PRECISION_FIX)
+    {
+        normal.y = 0;
+    }
+    normal.z = normal.z/magnitude;
+    if(abs(normal.z-0)<PRECISION_FIX)
+    {
+        normal.z = 0;
+    }
+
+
+    return normal;
+
+
+
+
+}
 double General::intersect(Ray& r, double* color, int recLevel)
 {
     Vector3D rd,ro;
@@ -663,7 +769,10 @@ double General::intersect(Ray& r, double* color, int recLevel)
         return -5;
     }
 
-
+    double ambient = this->coEfficients[0];
+    color[0] = this->color[0] * ambient;
+    color[1] = this->color[1] * ambient;
+    color[2] = this->color[2] * ambient;
 
     if(t1>=0 && t2>=0)
     {
@@ -677,10 +786,20 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
         if(insideGeneral(i1))
         {
+            if(recLevel == 1)
+            {
+                getPhongLighting(r,t1,color);
+            }
+
             return t1;
         }
         if(insideGeneral(i2))
         {
+            if(recLevel == 1)
+            {
+                getPhongLighting(r,t2,color);
+            }
+
             return t2;
         }
         return -10;
@@ -693,6 +812,11 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i1 = {ro.x+t1*rd.x,ro.y+t1*rd.y,ro.z+t1*rd.z};
         if(insideGeneral(i1))
         {
+            if(recLevel==1)
+            {
+                getPhongLighting(r,t1,color);
+            }
+
             return t1;
         }
         return -15;
@@ -703,6 +827,11 @@ double General::intersect(Ray& r, double* color, int recLevel)
         Vector3D i2 = {ro.x+t2*rd.x,ro.y+t2*rd.y,ro.z+t2*rd.z};
         if(insideGeneral(i2))
         {
+            if(recLevel==1)
+            {
+                getPhongLighting(r,t2,color);
+            }
+
             return t2;
         }
         return -20;
@@ -718,12 +847,19 @@ Floor::Floor(double floorWidth, double tileWidth)
 {
 
 
-
+        shine = 10;
         type = board;
         reference_point={-floorWidth/2,-floorWidth/2,0};
         tileLength=tileWidth;
         width = floorWidth;
-    }
+        this->coEfficients[0] = 0.4;
+
+        this->coEfficients[1] = 0.2;
+
+        this->coEfficients[2] = 0.2;
+
+        this->coEfficients[3] = 0.2;
+}
 
 void Floor::draw()
 {
@@ -794,6 +930,126 @@ bool Floor::insideFloor(Vector3D &intersect)
     return false;
 }
 
+Vector3D Floor::getNormal(Vector3D &intersectPoint)
+{
+    return normal;
+}
+
+void Floor::getPhongLighting(Ray &r, double t, double* color, bool color1Chosen)
+{
+    Vector3D intersectionPoint = {r.start.x+t*r.dir.x, r.start.y+t*r.dir.y, r.start.z+t*r.dir.z};
+    Vector3D normalAtIntersect = getNormal(intersectionPoint);
+    // adding epsilon to elevate intersection point...
+    double epsilon = 2*0.01;
+
+//    cout<<"before phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    for(int i=0;i<lights.size();i++)
+    {
+        if(true)
+        {
+            Light *curLight = lights[i];
+//            Light &tk = *(lights[i]);
+//            Object &tkk = *(this);
+            Ray rl(intersectionPoint,curLight->lightPos);
+            rl.start = {intersectionPoint.x + epsilon*rl.dir.x, intersectionPoint.y + epsilon*rl.dir.y, intersectionPoint.z + epsilon*rl.dir.z};
+//            double lightT = (curLight->lightPos.x-rl.start.x)/rl.dir.x; //    Rox + t * Rdirl = light.x
+            Vector3D distanceVec = {curLight->lightPos.x-intersectionPoint.x, curLight->lightPos.y-intersectionPoint.y, curLight->lightPos.z-intersectionPoint.z};
+            double lightT = sqrt(distanceVec.x*distanceVec.x + distanceVec.y*distanceVec.y + distanceVec.z*distanceVec.z);
+
+            double *dummyColor = new double[3];
+            bool obsecured = false;
+            for(int j=0;j<objects.size();j++)
+            {
+                double t = objects[j]->intersect(rl,dummyColor,0);
+                if(t>=0)
+                {
+                          if(lightT>t)
+                        {
+                            obsecured = true;
+                            break;
+                        }
+
+
+                }
+            }
+            delete[] dummyColor;
+            if(obsecured == false)
+            {
+
+                double lambertValue = rl.dir.x * normalAtIntersect.x +
+                rl.dir.y * normalAtIntersect.y + rl.dir.z * normalAtIntersect.z ;
+                double diffuseCo = this->coEfficients[1];
+                lambertValue = abs(lambertValue);
+                double c1,c2,c3;
+                if(color1Chosen)
+                {
+                    c1 = color1[0];
+                    c2 = color1[1];
+                    c3 = color1[2];
+                }
+                else
+                {
+                    c1 = color2[0];
+                    c2 = color2[1];
+                    c3 = color2[2];
+                }
+                if(true)
+                {
+                    color[0] += curLight->color[0]*diffuseCo*lambertValue*c1;
+                    color[1] += curLight->color[1]*diffuseCo*lambertValue*c2;
+                    color[2] += curLight->color[2]*diffuseCo*lambertValue*c3;
+                }
+                double z1 = color[0], z2 = color[1], z3 = color[2];
+                if(z1+z2+z3 ==100)
+                {
+                    cout<<"hello"<<endl;
+                }
+                double dDotN = lambertValue;
+//                d-2(d*n)n
+                Vector3D incidentRay = {rl.dir.x-2*dDotN*normalAtIntersect.x,
+                rl.dir.y-2*dDotN*normalAtIntersect.y, rl.dir.z-2*dDotN*normalAtIntersect.z};
+
+                double phongValue = incidentRay.x * r.dir.x +
+                incidentRay.y * r.dir.y + incidentRay.z * r.dir.z;
+                double phongConst = pow(phongValue,this->shine);
+                phongConst = abs(phongConst);
+                double specularCo = this->coEfficients[2];
+    //            if(phongConst <0 || lambertValue < 0)
+    //            {
+    //                cout<<" kill me"<<endl;
+    //            }
+                if(true)
+                {
+                    color[0] += curLight->color[0]*specularCo*phongConst*c1;
+                    color[1] += curLight->color[1]*specularCo*phongConst*c2;
+                    color[2] += curLight->color[2]*specularCo*phongConst*c3;
+                }
+
+                double t1 = color[0], t2 = color[1], t3 = color[2];
+                if(t1+t2+t3 ==100)
+                {
+                    cout<<"hello"<<endl;
+                }
+
+            }
+
+
+
+
+        }
+    }
+//    cout<<color[0]+color[1]+color[2]<<endl;
+//    if(globalColor[0]+globalColor[1]+globalColor[2] < color[0]+color[1]+color[2])
+//    {
+//        cout<<"hi"<<endl;
+//        globalColor[0] = color[0];
+//        globalColor[1] = color[1];
+//        globalColor[2] = color[2];
+//
+//    }
+//    cout<<"after phong: "<<color[0]<< " " << color[1] << " " << color[2]<<endl;
+    return;
+}
 double Floor::intersect(Ray& r, double* color, int recLevel)
 {
     Vector3D n,ro,rd,po,p;
@@ -820,40 +1076,51 @@ double Floor::intersect(Ray& r, double* color, int recLevel)
 //    printPoint(intersctionPoint);
     if(insideFloor(intersctionPoint))
     {
+        double ambient = this->coEfficients[0];
         int colDist = floor(abs(reference_point.x - intersctionPoint.x) / tileLength);
         int rowDist = floor(abs(reference_point.y - intersctionPoint.y) / tileLength);
 
-
+        bool color1Chosen = false;
         if(rowDist%2==0)
         {
             if(colDist%2==0)
             {
-                color[0] = color1[0];
-                color[1] = color1[1];
-                color[2] = color1[2];
+                color1Chosen = true;
+                color[0] = color1[0]*ambient;
+                color[1] = color1[1]*ambient;
+                color[2] = color1[2]*ambient;
+
+
+//                cout<<color[0]<<endl;
             }
             else
             {
-                color[0] = color2[0];
-                color[1] = color2[1];
-                color[2] = color2[2];
+                color[0] = color2[0]*ambient;
+                color[1] = color2[1]*ambient;
+                color[2] = color2[2]*ambient;
             }
         }
         else
         {
             if(colDist%2!=0)
             {
-                color[0] = color1[0];
-                color[1] = color1[1];
-                color[2] = color1[2];
+                color1Chosen = true;
+                color[0] = color1[0]*ambient;
+                color[1] = color1[1]*ambient;
+                color[2] = color1[2]*ambient;
             }
             else
             {
-                color[0] = color2[0];
-                color[1] = color2[1];
-                color[2] = color2[2];
+                color[0] = color2[0]*ambient;
+                color[1] = color2[1]*ambient;
+                color[2] = color2[2]*ambient;
             }
         }
+        if(recLevel==1)
+        {
+            getPhongLighting(r,t,color,color1Chosen);
+        }
+
 
         return t;
 

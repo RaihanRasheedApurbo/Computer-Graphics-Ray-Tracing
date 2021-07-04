@@ -536,17 +536,17 @@ void init(){
     zAmount = 0;
 
 //
-//    pos = {100,100,0};
-//    u = {0,0,1};
-//    r = {-1/sqrt(2),1/sqrt(2),0};
-//    l = {-1/sqrt(2),-1/sqrt(2),0};
+    pos = {100,100,0};
+    u = {0,0,1};
+    r = {-1/sqrt(2),1/sqrt(2),0};
+    l = {-1/sqrt(2),-1/sqrt(2),0};
 
 //
-    pos = {30.1729,1.46954,6};
-    u = {0,0,1};
-    r = {-0.258819,-0.965926,0};
-    l = {0.965926,-0.258819,0};
-//capturing
+//    pos = {30.1729,1.46954,6};
+//    u = {0,0,1};
+//    r = {-0.258819,-0.965926,0};
+//    l = {0.965926,-0.258819,0};
+////capturing
 
 
 //capturing
@@ -668,12 +668,12 @@ void capture()
 //                    break;
 //                }
                 Object *curObj = objects[k];
-                if(curObj->type == sphere)
+                if(true)
                 {
-                    if(i==250 && j == 350)
-                    {
-                        cout<<curObj->type<<endl;
-                    }
+//                    if(i==250 && j == 350)
+//                    {
+//                        cout<<curObj->type<<endl;
+//                    }
                     double t = curObj->intersect(r,color,levelOfRecursion);
                     if(t>=0)
                     {
@@ -681,11 +681,12 @@ void capture()
                         {
 
                             tmin = min(tmin,t);
-                            if(curObj->type != board)
+                            if(false)
+//                            if(curObj->type != sphere && curObj->type != board )
                             {
-                                minColor[0] = color[0];
-                                minColor[1] = color[1];
-                                minColor[2] = color[2];
+                                minColor[0] = curObj->color[0];
+                                minColor[1] = curObj->color[1];
+                                minColor[2] = curObj->color[2];
                             }
                             else
                             {
@@ -713,6 +714,11 @@ void capture()
 //                }
 
                 image.set_pixel(j,i,minColor[0]*255,minColor[1]*255,minColor[2]*255);
+                double t1 = minColor[0], t2 = minColor[1], t3 = minColor[2];
+                if(t1+t2+t3 ==100)
+                {
+                    cout<<"hello"<<endl;
+                }
             }
 //            else
 //            {
