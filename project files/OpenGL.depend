@@ -41,7 +41,7 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
-1625377693 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
+1625378909 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<math.h>
@@ -83,4 +83,15 @@
 	<iterator>
 	<limits>
 	<string>
+
+1625378909 source:c:\users\sherrinford\desktop\computer graphics ray tracing\project files\1605062_main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<iostream>
+	<windows.h>
+	<glut.h>
+	<bits/stdc++.h>
+	"1605062_ObjectClasses.h"
+	"bitmap_image.hpp"
 
